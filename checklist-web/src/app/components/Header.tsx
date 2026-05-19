@@ -34,6 +34,22 @@ export function Header({ user }: HeaderProps) {
           ) : null}
           {user ? (
             <>
+              <Link
+                href="/dashboard"
+                className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/checklists"
+                className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
+              >
+                Checklists
+              </Link>
+            </>
+          ) : null}
+          {user ? (
+            <>
               <span className="rounded-md px-3 py-2 text-slate-600">
                 {user.name} <span className="hidden sm:inline">({user.email})</span>
               </span>
