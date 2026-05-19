@@ -25,6 +25,14 @@ export function Header({ user }: HeaderProps) {
             Home
           </Link>
           {user ? (
+            <Link
+              href="/templates"
+              className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
+            >
+              Templates
+            </Link>
+          ) : null}
+          {user ? (
             <>
               <span className="rounded-md px-3 py-2 text-slate-600">
                 {user.name} <span className="hidden sm:inline">({user.email})</span>
