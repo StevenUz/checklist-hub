@@ -1,6 +1,13 @@
 import Link from "next/link";
 
-export function Header() {
+import { logoutAction } from "@/actions/authActions";
+import type { SessionUser } from "@/lib/session";
+
+type HeaderProps = {
+  user: SessionUser | null;
+};
+
+export function Header({ user }: HeaderProps) {
   return (
     <header className="border-b border-slate-200 bg-white">
       <nav
@@ -17,18 +24,36 @@ export function Header() {
           >
             Home
           </Link>
-          <Link
-            href="/login"
-            className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
-          >
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-md bg-emerald-600 px-3 py-2 text-white transition hover:bg-emerald-700"
-          >
-            Register
-          </Link>
+          {user ? (
+            <>
+              <span className="rounded-md px-3 py-2 text-slate-600">
+                {user.name} <span className="hidden sm:inline">({user.email})</span>
+              </span>
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className="rounded-md bg-slate-950 px-3 py-2 text-white transition hover:bg-slate-800"
+                >
+                  Logout
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="rounded-md px-3 py-2 transition hover:bg-slate-100 hover:text-slate-950"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-md bg-emerald-600 px-3 py-2 text-white transition hover:bg-emerald-700"
+              >
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </nav>
     </header>

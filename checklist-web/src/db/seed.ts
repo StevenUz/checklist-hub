@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { hash } from "argon2";
+import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 
 import { db } from ".";
@@ -2844,6 +2844,8 @@ const SAMPLE_USERS = [
   }),
 ] as const;
 
+const BCRYPT_SALT_ROUNDS = 12;
+
 async function findOrCreateSystemAdmin() {
   const email = "system-admin@checklisthub.local";
   const existingUser = await db.query.users.findFirst({
@@ -2851,6 +2853,15 @@ async function findOrCreateSystemAdmin() {
   });
 
   if (existingUser) {
+    if (!existingUser.passwordHash.startsWith("$2")) {
+      await db
+        .update(users)
+        .set({
+          passwordHash: await bcrypt.hash(randomUUID(), BCRYPT_SALT_ROUNDS),
+        })
+        .where(eq(users.id, existingUser.id));
+    }
+
     return existingUser;
   }
 
@@ -2859,7 +2870,7 @@ async function findOrCreateSystemAdmin() {
     .values({
       email,
       name: "ChecklistHub System Admin",
-      passwordHash: await hash(randomUUID()),
+      passwordHash: await bcrypt.hash(randomUUID(), BCRYPT_SALT_ROUNDS),
       role: "admin",
     })
     .returning();
@@ -2868,7 +2879,7 @@ async function findOrCreateSystemAdmin() {
 }
 
 async function seedSampleUsers() {
-  const passwordHash = await hash("pass123");
+  const passwordHash = await bcrypt.hash("pass123", BCRYPT_SALT_ROUNDS);
 
   for (const user of SAMPLE_USERS) {
     await db

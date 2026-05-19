@@ -1,6 +1,15 @@
-import { RegisterForm } from "@/app/components/RegisterForm";
+import { redirect } from "next/navigation";
 
-export default function RegisterPage() {
+import { RegisterForm } from "@/app/components/RegisterForm";
+import { getCurrentUser } from "@/lib/auth";
+
+export default async function RegisterPage() {
+  const user = await getCurrentUser();
+
+  if (user) {
+    redirect("/");
+  }
+
   return (
     <section className="mx-auto flex w-full max-w-md flex-col px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">

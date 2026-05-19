@@ -1,6 +1,15 @@
-import { LoginForm } from "@/app/components/LoginForm";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
+import { LoginForm } from "@/app/components/LoginForm";
+import { getCurrentUser } from "@/lib/auth";
+
+export default async function LoginPage() {
+  const user = await getCurrentUser();
+
+  if (user) {
+    redirect("/");
+  }
+
   return (
     <section className="mx-auto flex w-full max-w-md flex-col px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
