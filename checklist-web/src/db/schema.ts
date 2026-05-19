@@ -35,6 +35,7 @@ export const checklistStatusEnum = pgEnum("checklist_status", [
   "archived",
 ]);
 export const suggestionTypeEnum = pgEnum("suggestion_type", [
+  "new_activity",
   "new_template",
   "template_edit",
   "template_variant",

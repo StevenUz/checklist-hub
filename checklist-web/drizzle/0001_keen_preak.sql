@@ -1,0 +1,1 @@
+ALTER TYPE "public"."suggestion_type" ADD VALUE 'new_activity' BEFORE 'new_template';
