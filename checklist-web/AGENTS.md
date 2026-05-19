@@ -25,6 +25,11 @@ Do not add AI-powered product features. AI is only a development aid.
 
 ## Architecture Rules
 
+- **Service layer**: Implement app business logic, used by the RESTful API and Server Actions.
+- Use **modular design**: split the app into self-contained components, to avoid complex files with too much code.
+- **Auth**: JWT tokens + bcrypt.
+- **Database**: Neon DB + Drizzle ORM.
+
 - Use Server Components by default unless browser interaction is required.
 - Keep business logic in `src/services/` modules such as `authService`, `templateService`, `checklistService`, `suggestionService`, and `adminService`.
 - Server Actions should orchestrate validation, authorization, and service calls; do not bury business rules in page components.
@@ -105,3 +110,5 @@ All list endpoints should support server-side paging. Template endpoints should 
 - Show progress clearly on checklist execution screens.
 - Split large pages into focused components.
 - Protect admin UI visually and server-side; hiding links is not authorization.
+- Use server-rendered components in Next.js and App Router.
+- Use server-side rendering, only use client components  for browser interaction and forms.

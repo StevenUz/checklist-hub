@@ -4,12 +4,11 @@
 
 ChecklistHub is a full-stack, multi-platform app for discovering, using, customizing, and managing checklist templates for repeatable real-world workflows such as scuba diving, drone pre-flight preparation, travel, event organization, maintenance, and safety routines.
 
-The product itself must not include AI-powered end-user features. AI tools may be used only as development assistants.
 
 ## Monorepo Structure
 
-- `checklist-web/`: Next.js web app, backend APIs, Server Actions, admin UI, and full product functionality.
-- `checklist-mobile/`: Expo / React Native client focused on core end-user flows.
+- Workspace `checklist-web/`: Next.js web app, backend APIs, Server Actions, admin UI, and full product functionality.
+- Workspace `checklist-mobile/`: Expo / React Native client focused on core end-user flows.
 - `checklist-shared/`: shared TypeScript types, DTOs, validation schemas, and cross-platform contracts when needed.
 - Root `package.json`: npm workspaces and shared scripts.
 

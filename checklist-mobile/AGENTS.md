@@ -10,15 +10,15 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v55.0.0/ before 
 
 The mobile app should support login/register, browsing official templates, viewing template details, starting personal checklists, checking items, tracking progress, optionally adding personal checklist items, and submitting suggestions.
 
-Do not add AI-powered product features. AI is only a development aid.
 
 ## Stack
 
 - Expo SDK 55 + React Native + TypeScript.
 - Expo Router for navigation.
-- REST API calls to the Next.js backend in `checklist-web`.
+- REST API calls to the Next.js backend in `checklist-web`(back-end API source code: '..\checklist-web\src\app\api').
 - Bearer-token authentication for API calls.
 - Shared DTOs and validation schemas should come from `checklist-shared/` when practical.
+- Modular design: split the app into meaningful components, to avoid too much code in a single file and reuse repeating code.
 
 ## Folder Structure Conventions
 
@@ -76,8 +76,9 @@ Store and send auth tokens as Bearer tokens. Do not assume web HTTP-only cookies
 
 ## UI Rules
 
-- Optimize for smartphones first, then tablets.
+- Implement user-friendly UI, stack navigation, responsive layout (optimize for smartphones first, then tablets).
 - Use clear progress indicators on checklist execution screens.
 - Use reusable mobile components for buttons, cards, status badges, forms, tabs, progress bars, and empty states.
 - Keep navigation shallow and predictable.
 - Prefer platform-friendly controls and Expo/React Native conventions over web-only patterns.
+- Mobile UI Alerts: ensure all native alerts, confirms and other system dialgs have a fallback for Web(implement as modal popups)
