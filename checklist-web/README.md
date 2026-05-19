@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+Note: static public assets for this project have been moved to `src/public/` (instead of a top-level `public/`). Next.js image imports in the codebase reference assets from `src/public`.
+
 ## Getting Started
 
 First, run the development server:
@@ -34,3 +36,9 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Notes about `public` assets
+
+This project keeps source public assets in `src/public/`. To remain compatible with tooling or libraries that expect a top-level `public/` folder, a small sync step runs automatically before `npm run dev` and `npm run build`. The script copies `src/public/` into `public/`.
+
+If you prefer not to use the sync, update references to import assets from `src/public` directly.
