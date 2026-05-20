@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import type {
+  CreateSuggestionRequestDto,
+  PaginatedDto,
+  SuggestionDto,
+} from "@checklisthub/shared";
 
-import { AUTH_COOKIE_NAME, verifySessionToken } from "@/lib/session";
+import { requireApiUser } from "@/lib/apiAuth";
 import { createSuggestion, type SuggestionType } from "@/services/suggestionService";
+import { listUserSuggestions } from "@/services/suggestionService";
 
 const allowedTypes: SuggestionType[] = [
   "new_activity",
@@ -10,33 +16,35 @@ const allowedTypes: SuggestionType[] = [
   "template_variant",
 ];
 
-async function getApiUser(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
+function parsePositiveInt(value: string | null, fallback: number) {
+  const parsed = Number(value ?? String(fallback));
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
 
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice("Bearer ".length).trim();
-    if (token) {
-      return verifySessionToken(token);
-    }
+export async function GET(request: NextRequest) {
+  const auth = await requireApiUser(request);
+
+  if (!auth.ok) {
+    return auth.response;
   }
 
-  const cookieToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-  return cookieToken ? verifySessionToken(cookieToken) : null;
+  const response: PaginatedDto<SuggestionDto> = await listUserSuggestions({
+    userId: auth.user.id,
+    page: parsePositiveInt(request.nextUrl.searchParams.get("page"), 1),
+    pageSize: parsePositiveInt(request.nextUrl.searchParams.get("pageSize"), 8),
+  });
+
+  return NextResponse.json(response);
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getApiUser(request);
+  const auth = await requireApiUser(request);
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!auth.ok) {
+    return auth.response;
   }
 
-  let payload: {
-    type?: SuggestionType;
-    title?: string;
-    description?: string;
-    targetTemplateId?: number | null;
-  };
+  let payload: Partial<CreateSuggestionRequestDto>;
 
   try {
     payload = await request.json();
@@ -50,7 +58,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const suggestion = await createSuggestion({
-      userId: user.id,
+      userId: auth.user.id,
       type: payload.type,
       title: payload.title ?? "",
       description: payload.description ?? "",

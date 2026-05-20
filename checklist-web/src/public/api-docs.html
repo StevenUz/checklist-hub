@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChecklistHub API Documentation</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f8fafc;
+        --panel: #ffffff;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: #dbe3ee;
+        --soft: #eef6f1;
+        --accent: #047857;
+        --accent-dark: #065f46;
+        --warn: #92400e;
+        --warn-bg: #fffbeb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        line-height: 1.55;
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 40px 0 56px;
+      }
+
+      header {
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        line-height: 1.05;
+      }
+
+      h2 {
+        margin-top: 36px;
+        font-size: 1.45rem;
+      }
+
+      h3 {
+        margin-top: 22px;
+        font-size: 1.05rem;
+      }
+
+      p {
+        color: var(--muted);
+        margin: 8px 0 0;
+      }
+
+      a {
+        color: var(--accent-dark);
+      }
+
+      code,
+      pre {
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      }
+
+      code {
+        font-size: 0.92em;
+        background: #eef2f7;
+        padding: 0.12rem 0.28rem;
+        border-radius: 4px;
+      }
+
+      pre {
+        overflow-x: auto;
+        padding: 14px;
+        margin: 12px 0 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #0f172a;
+        color: #e2e8f0;
+        font-size: 0.86rem;
+      }
+
+      pre code {
+        background: transparent;
+        padding: 0;
+        color: inherit;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .card,
+      .endpoint,
+      .notice {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+      }
+
+      .notice {
+        margin-top: 18px;
+        background: var(--soft);
+        border-color: #bbf7d0;
+      }
+
+      .warning {
+        background: var(--warn-bg);
+        border-color: #fde68a;
+        color: var(--warn);
+      }
+
+      .endpoint {
+        margin-top: 16px;
+      }
+
+      .endpoint-title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .method {
+        display: inline-flex;
+        min-width: 56px;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 3px 8px;
+        background: #dcfce7;
+        color: #166534;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .method.post {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
+      .path {
+        font-weight: 700;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .tag {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 9px;
+        background: #fff;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 12px;
+      }
+
+      @media (max-width: 760px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>ChecklistHub API Documentation</h1>
+        <p>
+          REST API reference for the Expo mobile client and other JSON clients. All examples assume
+          the API is served from the same host as the Next.js app.
+        </p>
+        <div class="notice">
+          Authenticated endpoints accept <code>Authorization: Bearer &lt;jwt&gt;</code>. JSON list
+          endpoints return <code>{ "data": [], "pagination": {} }</code>.
+        </div>
+      </header>
+
+      <section>
+        <h2>Conventions</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Content Type</h3>
+            <p>Send request bodies as <code>application/json</code>. Responses are JSON except this docs page.</p>
+          </div>
+          <div class="card">
+            <h3>Authentication</h3>
+            <p>Call <code>POST /api/auth/login</code> and store the returned JWT token in the mobile app.</p>
+          </div>
+          <div class="card">
+            <h3>Pagination</h3>
+            <p>Use <code>page</code> and <code>pageSize</code>. Invalid values fall back to endpoint defaults.</p>
+          </div>
+          <div class="card">
+            <h3>Errors</h3>
+            <p>Errors use <code>{ "error": "Message" }</code> with an appropriate HTTP status code.</p>
+          </div>
+        </div>
+
+        <h3>Pagination DTO</h3>
+        <pre><code>{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "pageSize": 10,
+    "total": 42,
+    "totalPages": 5
+  }
+}</code></pre>
+      </section>
+
+      <section>
+        <h2>Endpoint Summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Path</th>
+              <th>Auth</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>POST</code></td><td><code>/api/auth/register</code></td><td>No</td><td>Create account</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td>No</td><td>Login and receive JWT</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/auth/me</code></td><td>Yes</td><td>Current user</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/templates</code></td><td>No</td><td>Published template list</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/templates/[id]</code></td><td>No</td><td>Template details</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/checklists</code></td><td>Yes</td><td>User checklist list</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/checklists</code></td><td>Yes</td><td>Create checklist from template</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/checklists/[id]</code></td><td>Yes</td><td>Checklist details</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/checklists/[id]/items</code></td><td>Yes</td><td>Add custom checklist item</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/checklists/[id]/items/[itemId]/toggle</code></td><td>Yes</td><td>Toggle item completion</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/suggestions</code></td><td>Yes</td><td>User suggestion list</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/suggestions</code></td><td>Yes</td><td>Create suggestion</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Authentication</h2>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method post">POST</span>
+            <span class="path">/api/auth/register</span>
+          </div>
+          <p>Creates a user account and returns a JWT token.</p>
+          <div class="two-col">
+            <div>
+              <h3>Request</h3>
+              <pre><code>{
+  "name": "Alex Diver",
+  "email": "alex@example.com",
+  "password": "pass123"
+}</code></pre>
+            </div>
+            <div>
+              <h3>Response 201</h3>
+              <pre><code>{
+  "token": "jwt-token",
+  "user": {
+    "id": 1,
+    "email": "alex@example.com",
+    "name": "Alex Diver",
+    "role": "user"
+  }
+}</code></pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method post">POST</span>
+            <span class="path">/api/auth/login</span>
+          </div>
+          <p>Logs in by email and password. Store the returned token in secure mobile storage.</p>
+          <pre><code>{
+  "email": "alex@example.com",
+  "password": "pass123"
+}</code></pre>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method">GET</span>
+            <span class="path">/api/auth/me</span>
+          </div>
+          <p>Returns the current authenticated user.</p>
+          <pre><code>Authorization: Bearer jwt-token</code></pre>
+        </article>
+      </section>
+
+      <section>
+        <h2>Templates</h2>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method">GET</span>
+            <span class="path">/api/templates</span>
+          </div>
+          <p>Lists published templates. Supports pagination and optional filters.</p>
+          <div class="tag-list">
+            <span class="tag">page: default 1</span>
+            <span class="tag">pageSize: default 10, max 50</span>
+            <span class="tag">q: search title/description</span>
+            <span class="tag">category: category slug</span>
+          </div>
+          <pre><code>GET /api/templates?page=1&amp;pageSize=10&amp;q=scuba&amp;category=diving</code></pre>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method">GET</span>
+            <span class="path">/api/templates/[id]</span>
+          </div>
+          <p>Returns template metadata, category, activity, sections, and official items.</p>
+        </article>
+      </section>
+
+      <section>
+        <h2>Checklists</h2>
+        <div class="notice warning">
+          Checklists are private. A user can only list, read, or modify their own checklists.
+        </div>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method">GET</span>
+            <span class="path">/api/checklists</span>
+          </div>
+          <p>Lists the authenticated user's checklists with progress information.</p>
+          <pre><code>GET /api/checklists?page=1&amp;pageSize=10
+Authorization: Bearer jwt-token</code></pre>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method post">POST</span>
+            <span class="path">/api/checklists</span>
+          </div>
+          <p>Creates a personal checklist copy from a published template.</p>
+          <pre><code>{
+  "templateId": 12
+}</code></pre>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method">GET</span>
+            <span class="path">/api/checklists/[id]</span>
+          </div>
+          <p>Returns checklist details, sections, user-editable items, and progress.</p>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method post">POST</span>
+            <span class="path">/api/checklists/[id]/items</span>
+          </div>
+          <p>Adds a custom item to one section of an owned checklist.</p>
+          <pre><code>{
+  "sectionId": 34,
+  "text": "Pack spare battery"
+}</code></pre>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method post">POST</span>
+            <span class="path">/api/checklists/[id]/items/[itemId]/toggle</span>
+          </div>
+          <p>Toggles an item between complete and incomplete.</p>
+        </article>
+      </section>
+
+      <section>
+        <h2>Suggestions</h2>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method">GET</span>
+            <span class="path">/api/suggestions</span>
+          </div>
+          <p>Lists suggestions submitted by the authenticated user, including admin notes and comments.</p>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-title">
+            <span class="method post">POST</span>
+            <span class="path">/api/suggestions</span>
+          </div>
+          <p>Creates a proposal for new activity/template work or improvements to an existing template.</p>
+          <pre><code>{
+  "type": "template_edit",
+  "title": "Add emergency oxygen check",
+  "description": "The scuba pre-dive list should include oxygen availability.",
+  "targetTemplateId": 12
+}</code></pre>
+          <p>
+            Allowed <code>type</code> values:
+            <code>new_activity</code>, <code>new_template</code>, <code>template_edit</code>,
+            <code>template_variant</code>. Template edit and variant suggestions require
+            <code>targetTemplateId</code>.
+          </p>
+        </article>
+      </section>
+
+      <section>
+        <h2>Status Codes</h2>
+        <table>
+          <thead>
+            <tr><th>Status</th><th>Meaning</th><th>Typical Body</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>200</code></td><td>Request succeeded</td><td><code>{ "data": ... }</code></td></tr>
+            <tr><td><code>201</code></td><td>Resource created</td><td><code>{ "data": ... }</code> or auth token</td></tr>
+            <tr><td><code>400</code></td><td>Invalid JSON, id, or request body</td><td><code>{ "error": "Message" }</code></td></tr>
+            <tr><td><code>401</code></td><td>Missing or invalid auth token</td><td><code>{ "error": "Unauthorized" }</code></td></tr>
+            <tr><td><code>404</code></td><td>Owned/public resource not found</td><td><code>{ "error": "Not found" }</code></td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>

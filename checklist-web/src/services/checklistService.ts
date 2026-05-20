@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, max } from "drizzle-orm";
+import { and, asc, count, desc, eq, max } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -9,6 +9,29 @@ import {
   userChecklists,
   userChecklistSections,
 } from "@/db/schema";
+
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 50;
+
+type PagingParams = {
+  page?: number;
+  pageSize?: number;
+};
+
+function normalizePaging(params: PagingParams = {}) {
+  const page = Number.isFinite(params.page) && params.page && params.page > 0 ? params.page : 1;
+  const requestedPageSize =
+    Number.isFinite(params.pageSize) && params.pageSize && params.pageSize > 0
+      ? params.pageSize
+      : DEFAULT_PAGE_SIZE;
+  const pageSize = Math.min(requestedPageSize, MAX_PAGE_SIZE);
+
+  return {
+    page,
+    pageSize,
+    offset: (page - 1) * pageSize,
+  };
+}
 
 export async function createChecklistFromTemplate(input: { templateId: number; userId: number }) {
   const template = await db.query.checklistTemplates.findFirst({
@@ -85,10 +108,17 @@ export function getChecklistProgress(
   };
 }
 
-export async function listUserChecklists(userId: number) {
+export async function listUserChecklists(
+  userId: number,
+  params: PagingParams = {},
+) {
+  const { page, pageSize, offset } = normalizePaging(params);
+
   const checklists = await db.query.userChecklists.findMany({
     where: eq(userChecklists.userId, userId),
     orderBy: [desc(userChecklists.updatedAt), desc(userChecklists.id)],
+    limit: pageSize,
+    offset,
     with: {
       sections: {
         with: {
@@ -103,10 +133,23 @@ export async function listUserChecklists(userId: number) {
     },
   });
 
-  return checklists.map((checklist) => ({
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(userChecklists)
+    .where(eq(userChecklists.userId, userId));
+
+  return {
+    data: checklists.map((checklist) => ({
     ...checklist,
     progress: getChecklistProgress(checklist.sections),
-  }));
+    })),
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    },
+  };
 }
 
 export async function getUserChecklistDetails(input: { checklistId: number; userId: number }) {
@@ -121,7 +164,11 @@ export async function getUserChecklistDetails(input: { checklistId: number; user
           },
         },
       },
-      template: true,
+      template: {
+        with: {
+          category: true,
+        },
+      },
     },
   });
 

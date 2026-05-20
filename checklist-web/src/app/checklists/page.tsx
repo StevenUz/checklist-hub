@@ -31,12 +31,12 @@ export default async function ChecklistsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {checklists.length === 0 ? (
+        {checklists.data.length === 0 ? (
           <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600 md:col-span-2">
             You do not have any checklists yet.
           </div>
         ) : (
-          checklists.map((checklist) => (
+          checklists.data.map((checklist) => (
             <Link
               key={checklist.id}
               href={`/checklists/${checklist.id}`}

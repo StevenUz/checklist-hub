@@ -28,6 +28,9 @@ const statusStyles: Record<string, string> = {
   implemented: "border-slate-200 bg-slate-100 text-slate-700",
 };
 
+const suggestionStatusFilters = ["", "pending", "accepted", "rejected", "implemented"] as const;
+type SuggestionStatusFilter = (typeof suggestionStatusFilters)[number];
+
 type AdminSuggestionsPageProps = {
   searchParams: Promise<{
     status?: string;
@@ -58,6 +61,13 @@ function formatDate(value: Date) {
   });
 }
 
+function parseSuggestionStatusFilter(value: string | undefined): SuggestionStatusFilter {
+  const status = value?.trim() ?? "";
+  return suggestionStatusFilters.includes(status as SuggestionStatusFilter)
+    ? (status as SuggestionStatusFilter)
+    : "";
+}
+
 export default async function AdminSuggestionsPage({ searchParams }: AdminSuggestionsPageProps) {
   const user = await getCurrentUser();
 
@@ -70,7 +80,7 @@ export default async function AdminSuggestionsPage({ searchParams }: AdminSugges
   }
 
   const resolvedSearchParams = await searchParams;
-  const status = resolvedSearchParams.status?.trim() ?? "";
+  const status = parseSuggestionStatusFilter(resolvedSearchParams.status);
   const page = Number(resolvedSearchParams.page ?? "1");
 
   const [suggestions, categories, activities] = await Promise.all([

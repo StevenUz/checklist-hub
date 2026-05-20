@@ -11,8 +11,10 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const checklists = await listUserChecklists(user.id);
-  const activeChecklists = checklists.filter((checklist) => checklist.status === "active").slice(0, 5);
+  const checklists = await listUserChecklists(user.id, { page: 1, pageSize: 50 });
+  const activeChecklists = checklists.data
+    .filter((checklist) => checklist.status === "active")
+    .slice(0, 5);
 
   return (
     <section className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -26,18 +28,23 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-lg border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-600">Total checklists</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-950">{checklists.length}</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-950">
+            {checklists.pagination.total}
+          </p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-600">Active</p>
           <p className="mt-2 text-3xl font-semibold text-slate-950">
-            {checklists.filter((checklist) => checklist.status === "active").length}
+            {checklists.data.filter((checklist) => checklist.status === "active").length}
           </p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-5">
           <p className="text-sm text-slate-600">Completed items</p>
           <p className="mt-2 text-3xl font-semibold text-slate-950">
-            {checklists.reduce((total, checklist) => total + checklist.progress.completedItems, 0)}
+            {checklists.data.reduce(
+              (total, checklist) => total + checklist.progress.completedItems,
+              0,
+            )}
           </p>
         </div>
       </div>

@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@checklisthub/shared": [
+        "../checklist-shared/src"
       ]
     }
   },
@@ -34,7 +37,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "**/*.mts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "../checklist-shared/src/**/*.ts"
   ],
   "exclude": [
     "node_modules"

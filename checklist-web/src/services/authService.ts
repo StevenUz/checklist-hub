@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -6,6 +5,10 @@ import { users } from "@/db/schema";
 import type { SessionUser } from "@/lib/auth";
 
 const PASSWORD_SALT_ROUNDS = 12;
+
+async function getBcrypt() {
+  return import("bcrypt");
+}
 
 export type AuthResult =
   | {
@@ -59,6 +62,7 @@ export async function registerUser(input: {
     return { ok: false, error: "An account with this email already exists." };
   }
 
+  const bcrypt = await getBcrypt();
   const passwordHash = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
 
   const [createdUser] = await db
@@ -88,6 +92,7 @@ export async function loginUser(input: { email: string; password: string }): Pro
     return { ok: false, error: "Invalid email or password." };
   }
 
+  const bcrypt = await getBcrypt();
   const isValidPassword = await bcrypt.compare(input.password, user.passwordHash);
 
   if (!isValidPassword) {

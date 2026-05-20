@@ -49,7 +49,17 @@ const statusOptions = [
   { value: "draft", label: "Draft" },
   { value: "published", label: "Published" },
   { value: "archived", label: "Archived" },
-];
+] as const;
+
+const templateStatusFilters = ["", "draft", "published", "archived"] as const;
+type TemplateStatusFilter = (typeof templateStatusFilters)[number];
+
+function parseTemplateStatusFilter(value: string | undefined): TemplateStatusFilter {
+  const status = value?.trim() ?? "";
+  return templateStatusFilters.includes(status as TemplateStatusFilter)
+    ? (status as TemplateStatusFilter)
+    : "";
+}
 
 export default async function AdminTemplatesPage({ searchParams }: AdminTemplatesPageProps) {
   const user = await getCurrentUser();
@@ -64,7 +74,7 @@ export default async function AdminTemplatesPage({ searchParams }: AdminTemplate
 
   const resolvedSearchParams = await searchParams;
   const query = resolvedSearchParams.q?.trim() ?? "";
-  const status = resolvedSearchParams.status?.trim() ?? "";
+  const status = parseTemplateStatusFilter(resolvedSearchParams.status);
   const category = resolvedSearchParams.category?.trim() ?? "";
   const page = Number(resolvedSearchParams.page ?? "1");
 

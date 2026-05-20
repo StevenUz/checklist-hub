@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { ApiDataDto, TemplateDetailsDto } from "@checklisthub/shared";
 
 import { getTemplateDetails } from "@/services/templateService";
 
@@ -22,5 +23,9 @@ export async function GET(_request: NextRequest, { params }: TemplateApiRouteCon
     return NextResponse.json({ error: "Template not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ data: template });
+  const response: ApiDataDto<TemplateDetailsDto> = {
+    data: template,
+  };
+
+  return NextResponse.json(response);
 }
