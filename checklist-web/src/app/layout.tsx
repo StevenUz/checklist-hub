@@ -32,7 +32,7 @@ export default async function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-slate-50 text-slate-950">
+      <body className="min-h-full bg-[linear-gradient(180deg,#dcfce7_0%,#ecfdf5_45%,#f7fee7_100%)] text-slate-950">
         <div className="flex min-h-screen flex-col">
           <Header user={user} />
           <main className="flex-1">{children}</main>

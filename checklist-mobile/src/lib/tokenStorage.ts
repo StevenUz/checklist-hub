@@ -1,14 +1,14 @@
+import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
 const TOKEN_KEY = "checklisthub_token";
-let nativeToken: string | null = null;
 
 export async function getStoredToken() {
   if (Platform.OS === "web" && typeof window !== "undefined") {
     return window.localStorage.getItem(TOKEN_KEY);
   }
 
-  return nativeToken;
+  return SecureStore.getItemAsync(TOKEN_KEY);
 }
 
 export async function setStoredToken(token: string) {
@@ -17,7 +17,7 @@ export async function setStoredToken(token: string) {
     return;
   }
 
-  nativeToken = token;
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
 }
 
 export async function clearStoredToken() {
@@ -26,5 +26,5 @@ export async function clearStoredToken() {
     return;
   }
 
-  nativeToken = null;
+  await SecureStore.deleteItemAsync(TOKEN_KEY);
 }

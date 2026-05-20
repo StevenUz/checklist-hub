@@ -1,13 +1,14 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from "react-native";
 import type { ChecklistDetailsDto } from "@checklisthub/shared";
 
 import * as api from "@/lib/api";
-import { colors, styles } from "@/lib/styles";
+import { ChecklistSection } from "./ChecklistSection";
 
 export default function ChecklistDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const checklistId = Number(id);
   const [checklist, setChecklist] = useState<ChecklistDetailsDto | null>(null);
   const [newItemText, setNewItemText] = useState("");
@@ -63,54 +64,57 @@ export default function ChecklistDetailsScreen() {
 
   return (
     <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
+      className="flex-1 bg-canvas"
+      contentContainerClassName="gap-4 px-5 pb-10 pt-4"
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} />}
     >
-      {isLoading ? <ActivityIndicator /> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <Pressable
+        className="self-start rounded-full border border-line bg-surface px-4 py-2"
+        onPress={() => router.push("/checklists")}
+      >
+        <Text className="text-sm font-bold text-ink">Back to My Checklists</Text>
+      </Pressable>
+
+      {isLoading ? <ActivityIndicator color="#047857" /> : null}
+      {error ? <Text className="text-sm font-semibold text-rose-700">{error}</Text> : null}
       {checklist ? (
         <>
-          <Text style={styles.title}>{checklist.title}</Text>
-          <Text style={styles.subtitle}>
-            {checklist.progress.completedItems} / {checklist.progress.totalItems} complete
-          </Text>
-          <View style={{ height: 10, borderRadius: 999, backgroundColor: "#e2e8f0" }}>
-            <View
-              style={{
-                height: 10,
-                width: `${checklist.progress.percentage}%`,
-                borderRadius: 999,
-                backgroundColor: colors.accent,
-              }}
-            />
+          <View className="gap-4 rounded-lg border border-line bg-surface p-5">
+            <View className="flex-row items-start justify-between gap-3">
+              <View className="flex-1">
+                <Text className="text-3xl font-bold text-ink">{checklist.title}</Text>
+                <Text className="mt-2 text-base leading-6 text-muted">
+                  {checklist.progress.completedItems} / {checklist.progress.totalItems} items complete
+                </Text>
+              </View>
+              <Text className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
+                {checklist.progress.percentage}%
+              </Text>
+            </View>
+            <View className="h-3 overflow-hidden rounded-full bg-slate-200">
+              <View
+                className="h-3 rounded-full bg-brand-700"
+                style={{ width: `${checklist.progress.percentage}%` }}
+              />
+            </View>
           </View>
 
           {checklist.sections.map((section) => (
-            <View key={section.id} style={styles.card}>
-              <Text style={styles.label}>{section.title}</Text>
-              {section.items.map((item) => (
-                <Pressable key={item.id} style={styles.row} onPress={() => toggleItem(item.id)}>
-                  <Text style={[styles.subtitle, { flex: 1, color: item.isCompleted ? colors.muted : colors.text }]}>
-                    {item.text}
-                  </Text>
-                  <Text style={styles.label}>{item.isCompleted ? "Done" : "Open"}</Text>
-                </Pressable>
-              ))}
-            </View>
+            <ChecklistSection key={section.id} section={section} onToggleItem={toggleItem} />
           ))}
 
           {targetSectionId ? (
-            <View style={styles.card}>
-              <Text style={styles.label}>Add custom item</Text>
+            <View className="gap-3 rounded-lg border border-line bg-surface p-4">
+              <Text className="text-lg font-bold text-ink">Add custom item</Text>
               <TextInput
                 placeholder="Item text"
-                style={styles.input}
+                className="min-h-12 rounded-lg border border-line bg-white px-4 text-ink"
+                placeholderTextColor="#94a3b8"
                 value={newItemText}
                 onChangeText={setNewItemText}
               />
-              <Pressable style={styles.button} onPress={addItem}>
-                <Text style={styles.buttonText}>Add item</Text>
+              <Pressable className="min-h-12 items-center justify-center rounded-lg bg-brand-700 px-4" onPress={addItem}>
+                <Text className="font-bold text-white">Add item</Text>
               </Pressable>
             </View>
           ) : null}

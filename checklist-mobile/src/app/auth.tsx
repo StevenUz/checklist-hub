@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { useAuth } from "@/auth/AuthContext";
-import { styles } from "@/lib/styles";
 
 export default function AuthScreen() {
   const { signIn, signUp } = useAuth();
@@ -32,13 +31,23 @@ export default function AuthScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{mode === "login" ? "Welcome back" : "Create account"}</Text>
+    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 px-5 pb-10 pt-4">
+      <View className="rounded-lg border border-line bg-surface p-5">
+        <Text className="text-3xl font-bold text-ink">
+          {mode === "login" ? "Welcome back" : "Create account"}
+        </Text>
+        <Text className="mt-2 text-base leading-6 text-muted">
+          {mode === "login"
+            ? "Sign in to sync checklists and submit suggestions."
+            : "Create an account to start using templates on mobile."}
+        </Text>
+      </View>
       {mode === "register" ? (
         <TextInput
           autoCapitalize="words"
           placeholder="Name"
-          style={styles.input}
+          className="min-h-12 rounded-lg border border-line bg-surface px-4 text-ink"
+          placeholderTextColor="#94a3b8"
           value={name}
           onChangeText={setName}
         />
@@ -47,26 +56,30 @@ export default function AuthScreen() {
         autoCapitalize="none"
         keyboardType="email-address"
         placeholder="Email"
-        style={styles.input}
+        className="min-h-12 rounded-lg border border-line bg-surface px-4 text-ink"
+        placeholderTextColor="#94a3b8"
         value={email}
         onChangeText={setEmail}
       />
       <TextInput
         placeholder="Password"
         secureTextEntry
-        style={styles.input}
+        className="min-h-12 rounded-lg border border-line bg-surface px-4 text-ink"
+        placeholderTextColor="#94a3b8"
         value={password}
         onChangeText={setPassword}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable style={styles.button} disabled={isSubmitting} onPress={submit}>
-        <Text style={styles.buttonText}>{isSubmitting ? "Please wait..." : mode === "login" ? "Login" : "Register"}</Text>
+      {error ? <Text className="text-sm font-semibold text-rose-700">{error}</Text> : null}
+      <Pressable className="min-h-12 items-center justify-center rounded-lg bg-brand-700 px-4" disabled={isSubmitting} onPress={submit}>
+        <Text className="font-bold text-white">
+          {isSubmitting ? "Please wait..." : mode === "login" ? "Login" : "Register"}
+        </Text>
       </Pressable>
       <Pressable
-        style={styles.outlineButton}
+        className="min-h-12 items-center justify-center rounded-lg border border-line bg-surface px-4"
         onPress={() => setMode(mode === "login" ? "register" : "login")}
       >
-        <Text style={[styles.buttonText, styles.outlineButtonText]}>
+        <Text className="font-bold text-ink">
           {mode === "login" ? "Need an account?" : "Already have an account?"}
         </Text>
       </Pressable>

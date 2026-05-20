@@ -1,8 +1,8 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
+import "@/global.css";
 import { AuthProvider } from "@/auth/AuthContext";
-import { colors } from "@/lib/styles";
 
 export default function RootLayout() {
   return (
@@ -10,10 +10,11 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
-          contentStyle: { backgroundColor: colors.background },
-          headerStyle: { backgroundColor: colors.background },
+          contentStyle: { backgroundColor: "#f8fafc" },
+          headerStyle: { backgroundColor: "#f8fafc" },
           headerShadowVisible: false,
-          headerTintColor: colors.text,
+          headerTintColor: "#0f172a",
+          headerTitleStyle: { fontWeight: "700" },
         }}
       >
         <Stack.Screen name="index" options={{ title: "ChecklistHub" }} />

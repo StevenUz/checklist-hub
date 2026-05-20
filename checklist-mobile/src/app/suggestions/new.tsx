@@ -1,11 +1,10 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import type { SuggestionTypeDto } from "@checklisthub/shared";
 
 import { useAuth } from "@/auth/AuthContext";
 import * as api from "@/lib/api";
-import { styles } from "@/lib/styles";
 
 const suggestionTypes: Array<{ value: SuggestionTypeDto; label: string }> = [
   { value: "new_activity", label: "New activity" },
@@ -47,40 +46,57 @@ export default function NewSuggestionScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>New Suggestion</Text>
-      <Text style={styles.subtitle}>Send an improvement proposal to ChecklistHub admins.</Text>
+    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 px-5 pb-10 pt-4">
+      <View className="rounded-lg border border-line bg-surface p-5">
+        <Text className="text-3xl font-bold text-ink">New Suggestion</Text>
+        <Text className="mt-2 text-base leading-6 text-muted">
+          Send an improvement proposal to ChecklistHub admins.
+        </Text>
+      </View>
 
       {suggestionTypes.map((option) => (
         <Pressable
           key={option.value}
-          style={type === option.value ? styles.button : styles.outlineButton}
+          className={
+            type === option.value
+              ? "min-h-12 items-center justify-center rounded-lg bg-brand-700 px-4"
+              : "min-h-12 items-center justify-center rounded-lg border border-line bg-surface px-4"
+          }
           onPress={() => setType(option.value)}
         >
-          <Text style={type === option.value ? styles.buttonText : [styles.buttonText, styles.outlineButtonText]}>
+          <Text className={type === option.value ? "font-bold text-white" : "font-bold text-ink"}>
             {option.label}
           </Text>
         </Pressable>
       ))}
 
-      <TextInput placeholder="Title" style={styles.input} value={title} onChangeText={setTitle} />
+      <TextInput
+        placeholder="Title"
+        className="min-h-12 rounded-lg border border-line bg-surface px-4 text-ink"
+        placeholderTextColor="#94a3b8"
+        value={title}
+        onChangeText={setTitle}
+      />
       <TextInput
         multiline
         placeholder="Description"
-        style={[styles.input, styles.textArea]}
+        className="min-h-28 rounded-lg border border-line bg-surface px-4 py-3 text-ink"
+        placeholderTextColor="#94a3b8"
+        textAlignVertical="top"
         value={description}
         onChangeText={setDescription}
       />
       <TextInput
         keyboardType="number-pad"
         placeholder="Target template ID, required for edits/variants"
-        style={styles.input}
+        className="min-h-12 rounded-lg border border-line bg-surface px-4 text-ink"
+        placeholderTextColor="#94a3b8"
         value={targetTemplateId}
         onChangeText={setTargetTemplateId}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable style={styles.button} disabled={isSubmitting} onPress={submit}>
-        <Text style={styles.buttonText}>{isSubmitting ? "Submitting..." : "Submit suggestion"}</Text>
+      {error ? <Text className="text-sm font-semibold text-rose-700">{error}</Text> : null}
+      <Pressable className="min-h-12 items-center justify-center rounded-lg bg-brand-700 px-4" disabled={isSubmitting} onPress={submit}>
+        <Text className="font-bold text-white">{isSubmitting ? "Submitting..." : "Submit suggestion"}</Text>
       </Pressable>
     </ScrollView>
   );

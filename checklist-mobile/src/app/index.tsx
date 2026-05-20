@@ -1,60 +1,57 @@
 import { Link, router } from "expo-router";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "@/auth/AuthContext";
-import { CHECKLISTHUB_API_URL } from "@/lib/config";
-import { styles } from "@/lib/styles";
 
 export default function HomeScreen() {
   const { user, isLoading, signOut } = useAuth();
 
   if (isLoading) {
     return (
-      <View style={[styles.screen, styles.content]}>
-        <ActivityIndicator />
+      <View className="flex-1 items-center justify-center bg-canvas">
+        <ActivityIndicator color="#047857" />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View>
-        <Text style={styles.title}>ChecklistHub</Text>
-        <Text style={styles.subtitle}>Browse templates, run checklists, and submit improvements.</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.label}>API</Text>
-        <Text style={styles.subtitle}>{CHECKLISTHUB_API_URL}</Text>
+    <ScrollView className="flex-1 bg-canvas" contentContainerClassName="gap-4 px-5 pb-10 pt-4">
+      <View className="rounded-lg border border-line bg-surface p-5">
+        <Text className="text-3xl font-bold text-ink">ChecklistHub</Text>
+        <Text className="mt-2 text-base leading-6 text-muted">
+          Browse official templates, run personal checklists, and submit useful improvements.
+        </Text>
       </View>
 
       {user ? (
-        <View style={styles.card}>
-          <Text style={styles.label}>Signed in as {user.name}</Text>
-          <Text style={styles.subtitle}>{user.email}</Text>
-          <Pressable style={styles.outlineButton} onPress={signOut}>
-            <Text style={[styles.buttonText, styles.outlineButtonText]}>Sign out</Text>
+        <View className="gap-3 rounded-lg border border-line bg-surface p-4">
+          <View>
+            <Text className="text-base font-bold text-ink">Signed in as {user.name}</Text>
+            <Text className="text-sm text-muted">{user.email}</Text>
+          </View>
+          <Pressable className="min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4" onPress={signOut}>
+            <Text className="font-bold text-ink">Sign out</Text>
           </Pressable>
         </View>
       ) : (
-        <Pressable style={styles.button} onPress={() => router.push("/auth")}>
-          <Text style={styles.buttonText}>Login / Register</Text>
+        <Pressable className="min-h-12 items-center justify-center rounded-lg bg-brand-700 px-4" onPress={() => router.push("/auth")}>
+          <Text className="font-bold text-white">Login / Register</Text>
         </Pressable>
       )}
 
       <Link href={"/templates" as never} asChild>
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Templates</Text>
+        <Pressable className="min-h-12 items-center justify-center rounded-lg bg-ink px-4">
+          <Text className="font-bold text-white">Templates</Text>
         </Pressable>
       </Link>
       <Link href={"/checklists" as never} asChild>
-        <Pressable style={StyleSheet.flatten([styles.button, styles.secondaryButton])}>
-          <Text style={styles.buttonText}>My Checklists</Text>
+        <Pressable className="min-h-12 items-center justify-center rounded-lg bg-brand-700 px-4">
+          <Text className="font-bold text-white">My Checklists</Text>
         </Pressable>
       </Link>
       <Link href="/suggestions/new" asChild>
-        <Pressable style={styles.outlineButton}>
-          <Text style={[styles.buttonText, styles.outlineButtonText]}>New Suggestion</Text>
+        <Pressable className="min-h-12 items-center justify-center rounded-lg border border-line bg-surface px-4">
+          <Text className="font-bold text-ink">New Suggestion</Text>
         </Pressable>
       </Link>
     </ScrollView>
