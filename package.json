@@ -14,8 +14,8 @@
     "checklist-mobile"
   ],
   "scripts": {
-    "build": "npm --prefix ./checklist-web run build && npm --prefix ./checklist-mobile run build",
-    "dev": "concurrently \"npm --prefix ./checklist-web run dev\" \"npm --prefix ./checklist-mobile run dev\""
+    "build": "cd checklist-web && npm run build && cd ..\\checklist-mobile && npm run build",
+    "dev": "concurrently \"cd checklist-web && npm run dev\" \"cd checklist-mobile && npm run dev\""
   },
   "overrides": {
     "postcss": "^8.5.10"

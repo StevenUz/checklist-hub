@@ -6,15 +6,14 @@
       "@/*": [
         "./src/*"
       ],
-      "@/assets/*": [
-        "./assets/*"
+      "@checklisthub/shared": [
+        "../checklist-shared/src"
       ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "../checklist-shared/src/**/*.ts"
   ]
 }

@@ -41,6 +41,7 @@ Do not add AI-powered product features. AI is only a development aid.
 
 - App Router pages, layouts, route groups, and API routes belong under the app route tree.
 - REST endpoints for mobile belong under `app/api/` or `src/app/api/`, depending on the current project layout.
+- Back-end API source code: '..\checklist-web\src\app\api'.
 - Server Actions belong in a dedicated actions folder such as `src/actions/`.
 - Business logic belongs in a dedicated services folder such as `src/services/`.
 - Drizzle schema, database client, seed scripts, and migration-related files belong in dedicated DB folders such as `src/db/` and `src/drizzle/`.
