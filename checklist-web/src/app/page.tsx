@@ -1,17 +1,19 @@
 import Link from "next/link";
+import { listTemplateCategories } from "@/services/templateService";
 
-export default function Home() {
+export default async function Home() {
+  const categories = await listTemplateCategories();
   return (
     <section className="bg-transparent">
-      <div className="mx-auto grid min-h-[calc(100vh-153px)] w-full max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-16">
+      <div className="mx-auto grid min-h-[calc(80vh-153px)] w-full max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-12">
         <div className="flex flex-col justify-center">
           <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-sm font-bold text-cyan-900 shadow-sm">
             Official templates. Personal execution. Better routines.
           </div>
-          <h1 className="max-w-3xl text-5xl font-black tracking-tight text-slate-950 sm:text-6xl">
+          <h1 className="max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
             Run every repeatable workflow with calm, visible progress.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700">
             ChecklistHub helps teams and individuals discover vetted templates, create editable
             personal copies, track completion, and send improvements back into the system.
           </p>
@@ -31,12 +33,12 @@ export default function Home() {
           </div>
           <div className="mt-10 grid max-w-xl grid-cols-3 gap-3">
             {[
-              ["20+", "seed templates"],
+              ["50+", "seed templates"],
               ["JWT", "mobile API"],
               ["Admin", "review queue"],
             ].map(([value, label]) => (
               <div key={label} className="rounded-lg border border-white/70 bg-white/85 p-4 shadow-sm backdrop-blur">
-                <p className="text-2xl font-black text-slate-950">{value}</p>
+                <p className="text-xl font-black text-slate-950">{value}</p>
                 <p className="mt-1 text-xs font-semibold uppercase text-slate-500">{label}</p>
               </div>
             ))}
@@ -45,41 +47,23 @@ export default function Home() {
 
         <div className="flex items-center">
           <div className="w-full rounded-lg border border-white/80 bg-white/90 p-5 shadow-xl shadow-cyan-900/10 backdrop-blur">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-slate-950">Scuba Pre-Dive Checklist</p>
-                <p className="text-sm text-slate-500">Personal copy</p>
-              </div>
-              <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-700">
-                64%
-              </span>
+            <div className="mb-4">
+              <p className="text-sm font-bold text-slate-950">Template Topics</p>
+              <p className="text-sm text-slate-500">Overview of available template categories</p>
             </div>
-            <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-              <div className="h-3 w-[64%] rounded-full bg-gradient-to-r from-cyan-600 to-emerald-600" />
-            </div>
-            <div className="mt-5 space-y-3">
-              {[
-                ["Dive computer charged", true],
-                ["Buddy equipment check", true],
-                ["Emergency oxygen confirmed", false],
-                ["Entry and exit procedures reviewed", false],
-              ].map(([label, done]) => (
-                <div
-                  key={String(label)}
-                  className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 px-3 py-3"
-                >
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-black ${
-                      done
-                        ? "border-cyan-700 bg-cyan-700 text-white"
-                        : "border-violet-200 bg-white text-transparent"
-                    }`}
+
+            <div className="mt-3 max-h-56 overflow-y-auto">
+              <ul className="space-y-2">
+                {categories.slice(0, 8).map((cat: any) => (
+                  <li
+                    key={cat.id}
+                    className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
                   >
-                    ✓
-                  </span>
-                  <span className="text-sm font-medium text-slate-700">{label}</span>
-                </div>
-              ))}
+                    <span className="h-2 w-2 rounded-full bg-cyan-600" />
+                    <span className="text-sm font-medium text-slate-700">{cat.name}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
