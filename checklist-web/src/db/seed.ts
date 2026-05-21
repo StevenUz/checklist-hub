@@ -3,6 +3,245 @@ import { randomUUID } from "node:crypto";
 import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 
+const DATA_BACKUP_VERIFICATION_CHECKLIST = [
+  {
+    title: "Backup Verification Planning",
+    items: [
+      "Define backup verification schedule",
+      "Identify critical systems and data to verify",
+      "Review backup policies and retention requirements",
+      "Assign backup verification responsibilities",
+      "Prepare verification documentation and logs",
+      "Confirm access permissions for backup systems",
+      "Identify recovery time objectives (RTO)",
+      "Identify recovery point objectives (RPO)",
+      "Prepare incident escalation procedures",
+      "Review previous backup verification reports",
+    ],
+  },
+  {
+    title: "Backup Availability Checks",
+    items: [
+      "Verify latest backups completed successfully",
+      "Confirm backup jobs ran on schedule",
+      "Check backup status notifications and alerts",
+      "Ensure backup files are accessible",
+      "Verify backup storage locations",
+      "Confirm offsite or cloud backups are available",
+      "Check backup file sizes for anomalies",
+      "Review backup logs for warnings or errors",
+      "Verify incremental and full backups exist as expected",
+      "Confirm retention policies are applied correctly",
+    ],
+  },
+  {
+    title: "Backup Integrity Verification",
+    items: [
+      "Validate backup file integrity checksums",
+      "Confirm backups are not corrupted",
+      "Test backup encryption and decryption if applicable",
+      "Verify database backup consistency",
+      "Check archive and compression integrity",
+      "Inspect backup media for physical damage if applicable",
+      "Confirm backup metadata accuracy",
+      "Verify backup timestamps and versions",
+      "Test snapshot integrity if using snapshots",
+      "Review backup validation reports",
+    ],
+  },
+  {
+    title: "Restore Testing",
+    items: [
+      "Perform test restore of critical files",
+      "Restore sample databases in test environment",
+      "Verify restored files open correctly",
+      "Confirm restored applications function properly",
+      "Test recovery of user accounts and permissions",
+      "Validate restoration of configuration files",
+      "Test virtual machine or container recovery if applicable",
+      "Verify restore speed meets recovery objectives",
+      "Ensure restored data matches original data",
+      "Document restore test results",
+    ],
+  },
+  {
+    title: "Database Backup Verification",
+    items: [
+      "Confirm successful database backup completion",
+      "Test database restore procedure",
+      "Verify transaction log backups if applicable",
+      "Check database replication and synchronization",
+      "Validate database integrity after restore",
+      "Confirm schema and data consistency",
+      "Review database backup storage usage",
+      "Test point-in-time recovery if applicable",
+      "Verify backup automation scripts",
+      "Confirm database backup retention policies",
+    ],
+  },
+  {
+    title: "Cloud and Offsite Backup Verification",
+    items: [
+      "Verify cloud backup synchronization status",
+      "Confirm remote backup access permissions",
+      "Test cloud restore functionality",
+      "Check bandwidth and transfer performance",
+      "Review cloud backup costs and storage usage",
+      "Verify geographic redundancy if required",
+      "Confirm backup provider service status",
+      "Test multi-region or multi-cloud recovery if applicable",
+      "Review offsite backup encryption and security",
+    ],
+  },
+  {
+    title: "Security and Compliance Checks",
+    items: [
+      "Verify backup encryption is enabled",
+      "Review access permissions to backup systems",
+      "Confirm backups are protected from ransomware risks",
+      "Check audit logs for unauthorized access attempts",
+      "Verify compliance with data retention regulations",
+      "Confirm secure transfer protocols are used",
+      "Test backup access authentication mechanisms",
+      "Review disaster recovery documentation",
+      "Ensure backup media is stored securely",
+      "Verify compliance reporting requirements",
+    ],
+  },
+  {
+    title: "Monitoring and Automation",
+    items: [
+      "Verify backup monitoring systems are operational",
+      "Test backup failure alerts and notifications",
+      "Confirm automated backup scripts function correctly",
+      "Review monitoring dashboards for anomalies",
+      "Verify scheduled verification tasks run successfully",
+      "Test logging and reporting systems",
+      "Ensure backup storage thresholds are monitored",
+      "Validate automation for backup cleanup and retention",
+      "Review backup performance metrics",
+    ],
+  },
+  {
+    title: "Documentation and Reporting",
+    items: [
+      "Update backup verification logs",
+      "Record failed or incomplete backups",
+      "Document restore test outcomes",
+      "Review backup inventory and storage locations",
+      "Update disaster recovery documentation",
+      "Prepare summary report for stakeholders",
+      "Track remediation actions for identified issues",
+      "Schedule follow-up verification if needed",
+      "Archive verification reports securely",
+      "Plan next backup verification cycle",
+    ],
+  },
+  {
+    title: "Final Review",
+    items: [
+      "Confirm all critical systems are covered by backups",
+      "Verify recovery objectives are achievable",
+      "Ensure no unresolved backup failures remain",
+      "Review overall backup reliability and performance",
+      "Confirm backup verification tasks are completed",
+      "Notify responsible teams of verification results",
+      "Approve backup readiness status",
+      "Maintain continuous backup monitoring",
+      "Review lessons learned and improvement opportunities",
+      "Prepare for future disaster recovery testing",
+    ],
+  },
+] as const;
+
+async function seedDataBackupVerificationTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Operations",
+      slug: "operations",
+      description: "Checklist templates for operational processes and maintenance.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Operations",
+        description: "Checklist templates for operational processes and maintenance.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Data Backup Verification",
+      slug: "data-backup-verification",
+      description: "Checklist for verifying backup availability, integrity, and restores.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Data Backup Verification",
+        description: "Checklist for verifying backup availability, integrity, and restores.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Data Backup Verification Checklist",
+      slug: "data-backup-verification-checklist",
+      description: "A checklist to verify backups, integrity, restores, and compliance.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Data Backup Verification Checklist",
+        description: "A checklist to verify backups, integrity, restores, and compliance.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of DATA_BACKUP_VERIFICATION_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+
 import { db } from ".";
 import {
   activities,
@@ -101,6 +340,786 @@ const SCUBA_CHECKLIST = [
     ],
   },
 ] as const;
+
+const HOME_RENOVATION_CHECKLIST = [
+  {
+    title: "Renovation Planning",
+    items: [
+      "Define renovation goals and priorities",
+      "Set renovation budget",
+      "Create renovation timeline",
+      "Identify rooms or areas to renovate",
+      "Research design ideas and inspiration",
+      "Prepare list of required materials",
+      "Determine DIY vs professional work",
+      "Review local building regulations and permits",
+      "Prepare contingency budget for unexpected costs",
+      "Assign responsibilities if multiple people are involved",
+    ],
+  },
+  {
+    title: "Design and Preparation",
+    items: [
+      "Finalize renovation design and layout",
+      "Measure rooms and spaces accurately",
+      "Select colors, finishes, and materials",
+      "Prepare floor plans if needed",
+      "Confirm furniture and appliance dimensions",
+      "Order materials and supplies in advance",
+      "Schedule contractor consultations if required",
+      "Plan temporary living arrangements if necessary",
+      "Protect valuable belongings and furniture",
+      "Prepare storage space for removed items",
+    ],
+  },
+  {
+    title: "Permits and Contractor Management",
+    items: [
+      "Apply for required permits",
+      "Verify contractor licenses and insurance",
+      "Review contracts and payment schedules",
+      "Confirm renovation start and completion dates",
+      "Schedule inspections if required",
+      "Prepare communication plan with contractors",
+      "Keep copies of all agreements and receipts",
+      "Verify warranties for materials and labor",
+      "Ensure access to property for workers",
+    ],
+  },
+  {
+    title: "Demolition and Site Preparation",
+    items: [
+      "Remove furniture and personal belongings",
+      "Cover floors and unaffected areas",
+      "Disconnect utilities if necessary",
+      "Remove old fixtures or materials safely",
+      "Dispose of demolition waste properly",
+      "Check for hidden issues (mold, water damage, wiring)",
+      "Prepare tools and safety equipment",
+      "Ensure proper ventilation during work",
+      "Label electrical and plumbing connections if needed",
+      "Secure work area from children or pets",
+    ],
+  },
+  {
+    title: "Structural and Utility Work",
+    items: [
+      "Inspect walls, ceilings, and floors",
+      "Repair or reinforce structural elements if needed",
+      "Upgrade electrical wiring if necessary",
+      "Inspect plumbing systems",
+      "Install or repair insulation",
+      "Verify HVAC system compatibility",
+      "Replace damaged windows or doors",
+      "Confirm proper drainage and waterproofing",
+      "Test utility connections after work",
+      "Schedule professional inspections where required",
+    ],
+  },
+  {
+    title: "Flooring and Surface Installation",
+    items: [
+      "Prepare subfloor or wall surfaces",
+      "Install flooring materials",
+      "Paint walls and ceilings",
+      "Install tiles or backsplashes",
+      "Apply trim and molding",
+      "Verify level and alignment of installations",
+      "Allow proper drying and curing time",
+      "Clean surfaces after installation",
+      "Inspect finishes for defects or damage",
+      "Protect newly finished surfaces",
+    ],
+  },
+  {
+    title: "Kitchen and Bathroom Renovation (if applicable)",
+    items: [
+      "Install cabinets and countertops",
+      "Test plumbing fixtures and connections",
+      "Install sinks, faucets, and appliances",
+      "Verify ventilation systems",
+      "Install lighting fixtures",
+      "Check waterproofing in wet areas",
+      "Test all appliances and utilities",
+      "Inspect storage functionality",
+      "Seal countertops, grout, or surfaces if needed",
+      "Confirm proper drainage and water flow",
+    ],
+  },
+  {
+    title: "Electrical and Lighting",
+    items: [
+      "Install or replace outlets and switches",
+      "Test all electrical circuits",
+      "Install lighting fixtures",
+      "Verify breaker panel labeling",
+      "Test smoke and carbon monoxide detectors",
+      "Organize cable and wiring management",
+      "Confirm smart home systems if applicable",
+      "Ensure compliance with electrical safety standards",
+      "Test backup power systems if available",
+    ],
+  },
+  {
+    title: "Cleaning and Final Preparation",
+    items: [
+      "Remove dust and debris thoroughly",
+      "Clean windows, floors, and surfaces",
+      "Dispose of leftover materials safely",
+      "Organize tools and unused supplies",
+      "Inspect renovated areas carefully",
+      "Touch up paint or finishes if needed",
+      "Reinstall furniture and decorations",
+      "Verify all systems and appliances work correctly",
+      "Test doors, locks, and windows",
+      "Prepare final renovation checklist review",
+    ],
+  },
+  {
+    title: "Safety and Maintenance",
+    items: [
+      "Inspect fire extinguishers and safety systems",
+      "Review emergency exits and accessibility",
+      "Check for sharp edges or hazards",
+      "Verify proper ventilation and air quality",
+      "Store chemicals and tools safely",
+      "Review maintenance instructions for new materials",
+      "Schedule future maintenance tasks",
+      "Keep warranty documents organized",
+      "Monitor renovated areas for issues after completion",
+      "Update home insurance information if necessary",
+    ],
+  },
+  {
+    title: "After Renovation Completion",
+    items: [
+      "Conduct final walkthrough inspection",
+      "Confirm contractor punch-list items are completed",
+      "Save receipts and renovation documentation",
+      "Take photos of completed renovation",
+      "Review overall project budget and expenses",
+      "Leave reviews for contractors if desired",
+      "Organize leftover materials for future repairs",
+      "Celebrate completion of the renovation",
+      "Plan ongoing cleaning and maintenance routines",
+      "Enjoy the renovated home space",
+    ],
+  },
+] as const;
+
+async function seedHomeRenovationTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Home",
+      slug: "home",
+      description: "Checklist templates for home tasks, maintenance, and routines.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Home",
+        description: "Checklist templates for home tasks, maintenance, and routines.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Home Renovation",
+      slug: "home-renovation",
+      description: "Planning and execution checklist for home renovation projects.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Home Renovation",
+        description: "Planning and execution checklist for home renovation projects.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Home Renovation Checklist",
+      slug: "home-renovation-checklist",
+      description: "Comprehensive checklist to guide planning, construction, and finishing of home renovations.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Home Renovation Checklist",
+        description: "Comprehensive checklist to guide planning, construction, and finishing of home renovations.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of HOME_RENOVATION_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+const SERVER_MAINTENANCE_CHECKLIST = [
+  {
+    title: "Maintenance Planning",
+    items: [
+      "Define maintenance scope and objectives",
+      "Schedule maintenance window",
+      "Notify affected users or teams",
+      "Review previous maintenance logs and issues",
+      "Prepare rollback or recovery plan",
+      "Assign maintenance responsibilities",
+      "Verify access credentials and permissions",
+      "Confirm backup and recovery procedures",
+      "Prepare communication channels for incidents",
+      "Ensure emergency contacts are available",
+    ],
+  },
+  {
+    title: "Backup and Recovery",
+    items: [
+      "Verify recent system backups completed successfully",
+      "Perform manual backup if necessary",
+      "Test backup integrity and restore process",
+      "Confirm database backups are current",
+      "Back up configuration files",
+      "Verify offsite or cloud backup availability",
+      "Document backup locations",
+      "Ensure recovery tools are accessible",
+      "Check disaster recovery readiness",
+      "Confirm rollback plan is documented",
+    ],
+  },
+  {
+    title: "Hardware Inspection",
+    items: [
+      "Inspect server hardware for physical damage",
+      "Check server room temperature and ventilation",
+      "Verify cooling systems are functioning",
+      "Inspect power supplies and UPS systems",
+      "Check cables and network connections",
+      "Inspect storage drives for warnings or failures",
+      "Verify RAID system health",
+      "Clean dust from server equipment if needed",
+      "Check server fans for proper operation",
+      "Inspect physical security of server area",
+    ],
+  },
+  {
+    title: "Operating System Maintenance",
+    items: [
+      "Check system uptime and performance",
+      "Install operating system updates and patches",
+      "Verify kernel and system package updates",
+      "Review system logs for errors or warnings",
+      "Remove unnecessary temporary files",
+      "Check disk usage and free space",
+      "Verify time synchronization settings",
+      "Restart services if required",
+      "Confirm automatic update configurations",
+      "Reboot server if necessary after updates",
+    ],
+  },
+  {
+    title: "Security Maintenance",
+    items: [
+      "Review user accounts and permissions",
+      "Disable unused or inactive accounts",
+      "Verify password policies",
+      "Check firewall configurations",
+      "Review security logs and alerts",
+      "Verify antivirus or endpoint protection status",
+      "Update security software and signatures",
+      "Test intrusion detection/prevention systems",
+      "Verify SSL certificates and expiration dates",
+      "Confirm multi-factor authentication settings if applicable",
+    ],
+  },
+  {
+    title: "Network and Connectivity Checks",
+    items: [
+      "Test internet and network connectivity",
+      "Verify DNS functionality",
+      "Check VPN and remote access systems",
+      "Test load balancers if applicable",
+      "Verify network bandwidth usage",
+      "Inspect open ports and active services",
+      "Review routing and firewall rules",
+      "Test failover systems if available",
+      "Confirm monitoring and alerting systems work properly",
+      "Validate external service connectivity",
+    ],
+  },
+  {
+    title: "Database Maintenance",
+    items: [
+      "Verify database service health",
+      "Check database storage usage",
+      "Review slow query logs",
+      "Optimize or rebuild indexes if needed",
+      "Test database replication if applicable",
+      "Verify scheduled database jobs",
+      "Clean old or unnecessary data if approved",
+      "Confirm database backup completion",
+      "Monitor database performance metrics",
+      "Validate database integrity",
+    ],
+  },
+  {
+    title: "Application and Service Maintenance",
+    items: [
+      "Verify application services are running",
+      "Restart services if needed",
+      "Check API availability and response times",
+      "Review application logs for errors",
+      "Confirm scheduled jobs and background tasks are working",
+      "Verify integrations with external systems",
+      "Test authentication and user access",
+      "Clear or refresh caches if necessary",
+      "Confirm environment variables and configurations",
+      "Validate service health endpoints",
+    ],
+  },
+  {
+    title: "Monitoring and Logging",
+    items: [
+      "Verify monitoring systems are operational",
+      "Review CPU and memory usage trends",
+      "Check storage and disk performance metrics",
+      "Confirm alert notifications work correctly",
+      "Review centralized logging systems",
+      "Verify log rotation and retention policies",
+      "Monitor unusual activity or spikes",
+      "Test uptime monitoring services",
+      "Confirm dashboards display accurate data",
+      "Archive logs if required",
+    ],
+  },
+  {
+    title: "Performance Optimization",
+    items: [
+      "Analyze system resource usage",
+      "Identify bottlenecks or performance issues",
+      "Optimize startup or background services",
+      "Review database query performance",
+      "Test server response times",
+      "Verify caching mechanisms",
+      "Remove unnecessary applications or services",
+      "Monitor network latency",
+      "Tune server configurations if necessary",
+      "Document optimization changes",
+    ],
+  },
+  {
+    title: "Final Verification",
+    items: [
+      "Perform post-maintenance system checks",
+      "Verify all services are operational",
+      "Test critical business functions",
+      "Confirm users can access systems normally",
+      "Review monitoring dashboards for issues",
+      "Check logs for post-maintenance errors",
+      "Validate backup systems after maintenance",
+      "Notify users that maintenance is complete",
+      "Update maintenance documentation and logs",
+      "Schedule follow-up review if necessary",
+    ],
+  },
+] as const;
+
+async function seedServerMaintenanceTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Operations",
+      slug: "operations",
+      description: "Checklist templates for operational processes and maintenance.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Operations",
+        description: "Checklist templates for operational processes and maintenance.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Server Maintenance",
+      slug: "server-maintenance",
+      description: "Routine server maintenance and operational checklist.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Server Maintenance",
+        description: "Routine server maintenance and operational checklist.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Server Maintenance Checklist",
+      slug: "server-maintenance-checklist",
+      description: "Checklist for planning, performing, and validating server maintenance tasks.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Server Maintenance Checklist",
+        description: "Checklist for planning, performing, and validating server maintenance tasks.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of SERVER_MAINTENANCE_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+const CYBERSECURITY_AUDIT_CHECKLIST = [
+  {
+    title: "Audit Planning and Scope",
+    items: [
+      "Define audit objectives and scope",
+      "Identify systems, applications, and networks to audit",
+      "Determine compliance requirements and standards",
+      "Assign audit roles and responsibilities",
+      "Prepare audit timeline and schedule",
+      "Review previous audit reports and findings",
+      "Identify critical business assets and data",
+      "Define risk assessment criteria",
+      "Obtain necessary access permissions",
+      "Prepare incident response contacts and procedures",
+    ],
+  },
+  {
+    title: "Asset Inventory and Management",
+    items: [
+      "Verify inventory of hardware devices",
+      "Verify inventory of software applications",
+      "Identify unauthorized or unknown devices",
+      "Review cloud services and external platforms",
+      "Confirm asset ownership and responsibility",
+      "Check asset lifecycle and update status",
+      "Verify backup systems and storage devices",
+      "Review mobile and remote devices",
+      "Confirm proper disposal procedures for retired assets",
+      "Ensure inventory documentation is current",
+    ],
+  },
+  {
+    title: "User Accounts and Access Control",
+    items: [
+      "Review user account permissions",
+      "Verify role-based access controls",
+      "Identify inactive or unused accounts",
+      "Confirm strong password policies",
+      "Verify multi-factor authentication implementation",
+      "Review privileged/admin account usage",
+      "Check account lockout and session timeout settings",
+      "Confirm least-privilege access principles",
+      "Audit third-party and vendor access",
+      "Review onboarding and offboarding access procedures",
+    ],
+  },
+  {
+    title: "Network Security",
+    items: [
+      "Review firewall configurations",
+      "Verify intrusion detection/prevention systems",
+      "Check VPN and remote access security",
+      "Audit wireless network security settings",
+      "Verify network segmentation implementation",
+      "Review open ports and unnecessary services",
+      "Check DNS and DHCP security configurations",
+      "Test network monitoring and logging systems",
+      "Verify secure network protocols are used",
+      "Review external exposure and internet-facing services",
+    ],
+  },
+  {
+    title: "Endpoint and Device Security",
+    items: [
+      "Verify antivirus and endpoint protection software",
+      "Check operating system update status",
+      "Review patch management procedures",
+      "Confirm device encryption implementation",
+      "Test USB and removable media restrictions",
+      "Audit mobile device management policies",
+      "Verify secure configuration baselines",
+      "Review local administrator access",
+      "Check device lock and inactivity timeout settings",
+      "Confirm backup and recovery procedures",
+    ],
+  },
+  {
+    title: "Application and Software Security",
+    items: [
+      "Review software update and patching process",
+      "Verify secure coding practices",
+      "Audit authentication and authorization mechanisms",
+      "Check API security configurations",
+      "Test input validation and sanitization",
+      "Review dependency and vulnerability management",
+      "Verify application logging and monitoring",
+      "Check data encryption in transit and at rest",
+      "Confirm secure deployment practices",
+      "Review third-party software risks",
+    ],
+  },
+  {
+    title: "Data Protection and Privacy",
+    items: [
+      "Identify sensitive and confidential data",
+      "Verify data classification policies",
+      "Review data encryption practices",
+      "Audit backup and recovery procedures",
+      "Confirm secure data storage locations",
+      "Check data retention and deletion policies",
+      "Verify compliance with privacy regulations",
+      "Review file sharing and access permissions",
+      "Audit cloud storage security",
+      "Confirm disaster recovery readiness",
+    ],
+  },
+  {
+    title: "Logging, Monitoring, and Incident Response",
+    items: [
+      "Verify centralized logging systems",
+      "Review security event monitoring processes",
+      "Test alert and notification systems",
+      "Confirm log retention policies",
+      "Audit incident response procedures",
+      "Verify incident escalation paths",
+      "Review past security incidents and responses",
+      "Test backup communication methods",
+      "Conduct incident response simulation if needed",
+      "Ensure forensic data collection capability",
+    ],
+  },
+  {
+    title: "Physical Security",
+    items: [
+      "Inspect server rooms and restricted areas",
+      "Verify access control systems",
+      "Review visitor access procedures",
+      "Check surveillance and monitoring systems",
+      "Confirm environmental protections (fire, temperature, water)",
+      "Audit hardware storage security",
+      "Verify secure disposal of physical documents and devices",
+      "Test emergency power and backup systems",
+      "Review physical security policies and signage",
+      "Confirm equipment locking mechanisms",
+    ],
+  },
+  {
+    title: "Compliance and Policy Review",
+    items: [
+      "Review cybersecurity policies and procedures",
+      "Verify employee security awareness training",
+      "Check compliance with industry regulations",
+      "Audit password and authentication policies",
+      "Review acceptable use policies",
+      "Confirm vendor and third-party compliance",
+      "Verify business continuity plans",
+      "Review security exception handling",
+      "Check documentation completeness and accuracy",
+      "Ensure regular policy review schedule exists",
+    ],
+  },
+  {
+    title: "Vulnerability and Penetration Testing",
+    items: [
+      "Run vulnerability scans",
+      "Review scan results and remediation status",
+      "Test web application security",
+      "Perform penetration testing if authorized",
+      "Check for outdated or unsupported software",
+      "Verify remediation of known vulnerabilities",
+      "Test phishing awareness if applicable",
+      "Audit exposed credentials or sensitive data",
+      "Confirm security patch deployment timelines",
+      "Document identified risks and recommendations",
+    ],
+  },
+  {
+    title: "Audit Reporting and Follow-Up",
+    items: [
+      "Document all findings and observations",
+      "Prioritize risks by severity and impact",
+      "Prepare remediation recommendations",
+      "Assign remediation responsibilities",
+      "Schedule follow-up reviews",
+      "Present audit results to stakeholders",
+      "Archive audit logs and evidence securely",
+      "Track remediation progress",
+      "Update security roadmap and action plans",
+      "Plan next cybersecurity audit cycle",
+    ],
+  },
+] as const;
+
+async function seedCybersecurityAuditTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Security",
+      slug: "security",
+      description: "Checklist templates for safety, security, and emergency preparedness.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Security",
+        description: "Checklist templates for safety, security, and emergency preparedness.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Cybersecurity Audit",
+      slug: "cybersecurity-audit",
+      description: "Comprehensive cybersecurity audit checklist for systems, networks, and applications.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Cybersecurity Audit",
+        description: "Comprehensive cybersecurity audit checklist for systems, networks, and applications.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Cybersecurity Audit Checklist",
+      slug: "cybersecurity-audit-checklist",
+      description: "A detailed checklist to guide cybersecurity audits across infrastructure, applications, and policies.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Cybersecurity Audit Checklist",
+        description: "A detailed checklist to guide cybersecurity audits across infrastructure, applications, and policies.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of CYBERSECURITY_AUDIT_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+
 
 const DRONE_PREFLIGHT_CHECKLIST = [
   {
@@ -487,6 +1506,164 @@ const CAMPING_HIKING_CHECKLIST = [
       "Review trip notes or observations",
       "Notify contacts after safe return",
       "Clean and dry gear after arriving home",
+    ],
+  },
+] as const;
+
+const HIKING_SAFETY_CHECKLIST = [
+  {
+    title: "Trip Planning",
+    items: [
+      "Choose hiking trail and destination",
+      "Research trail difficulty and distance",
+      "Check weather forecast",
+      "Review trail maps and route information",
+      "Estimate hiking duration and return time",
+      "Inform someone about hiking plans and schedule",
+      "Identify emergency exit routes",
+      "Check park rules and regulations",
+      "Verify trail permits if required",
+      "Plan backup route or turnaround point",
+    ],
+  },
+  {
+    title: "Clothing and Footwear",
+    items: [
+      "Wear proper hiking boots or trail shoes",
+      "Pack weather-appropriate clothing",
+      "Bring waterproof jacket or rain gear",
+      "Wear moisture-wicking layers",
+      "Pack extra socks",
+      "Bring hat and sunglasses",
+      "Wear gloves if needed for cold conditions",
+      "Carry extra clothing layers for temperature changes",
+      "Use sunscreen and lip protection",
+    ],
+  },
+  {
+    title: "Navigation and Communication",
+    items: [
+      "Carry map and compass",
+      "Bring GPS device or navigation app",
+      "Download offline maps",
+      "Fully charge phone and electronic devices",
+      "Bring power bank or spare batteries",
+      "Save emergency contact numbers",
+      "Carry whistle for signaling",
+      "Test communication devices before departure",
+    ],
+  },
+  {
+    title: "Food and Water Supplies",
+    items: [
+      "Carry enough drinking water",
+      "Bring water filtration or purification system",
+      "Pack high-energy snacks",
+      "Prepare meals if hiking long distance",
+      "Bring electrolyte supplements if needed",
+      "Store food securely",
+      "Pack reusable water bottles",
+      "Carry emergency food supply",
+    ],
+  },
+  {
+    title: "Safety and Emergency Equipment",
+    items: [
+      "Pack first aid kit",
+      "Bring emergency blanket or shelter",
+      "Carry flashlight or headlamp",
+      "Bring spare batteries",
+      "Pack multi-tool or knife",
+      "Carry fire starter or waterproof matches",
+      "Bring trekking poles if needed",
+      "Pack emergency whistle",
+      "Carry personal medications",
+      "Bring insect repellent",
+    ],
+  },
+  {
+    title: "Environmental and Trail Safety",
+    items: [
+      "Stay on marked trails",
+      "Check for wildlife activity in the area",
+      "Avoid dangerous or unstable terrain",
+      "Monitor weather changes continuously",
+      "Be cautious near cliffs or water crossings",
+      "Respect trail closures and warnings",
+      "Follow Leave No Trace principles",
+      "Avoid hiking alone if possible",
+      "Keep safe distance from wildlife",
+      "Turn back if conditions become unsafe",
+    ],
+  },
+  {
+    title: "Physical Readiness",
+    items: [
+      "Assess fitness level before the hike",
+      "Stretch and warm up before starting",
+      "Pace yourself appropriately",
+      "Take regular breaks",
+      "Stay hydrated during hike",
+      "Monitor for signs of exhaustion or dehydration",
+      "Avoid overloading backpack",
+      "Get adequate rest before hiking day",
+    ],
+  },
+  {
+    title: "Backpack and Gear Check",
+    items: [
+      "Pack lightweight and essential gear only",
+      "Secure backpack straps properly",
+      "Carry rain cover for backpack",
+      "Pack trash bags for waste",
+      "Bring identification documents if needed",
+      "Carry cash/cards for emergencies",
+      "Pack camera or binoculars if desired",
+      "Ensure all gear is weather-protected",
+    ],
+  },
+  {
+    title: "Before Starting the Hike",
+    items: [
+      "Recheck weather and trail conditions",
+      "Confirm everyone in group is prepared",
+      "Verify navigation tools are working",
+      "Apply sunscreen and insect repellent",
+      "Review emergency procedures",
+      "Set expected check-in time with contact person",
+      "Lock vehicle and secure valuables",
+      "Start hike early enough for daylight return",
+      "Check water and food supplies one final time",
+    ],
+  },
+  {
+    title: "During the Hike",
+    items: [
+      "Monitor trail markers regularly",
+      "Keep group together",
+      "Watch footing and terrain carefully",
+      "Stay aware of changing weather",
+      "Drink water regularly",
+      "Avoid unnecessary risks or shortcuts",
+      "Check energy levels periodically",
+      "Take shelter if severe weather develops",
+      "Monitor for signs of injury or fatigue",
+      "Turn back if conditions worsen",
+    ],
+  },
+  {
+    title: "After the Hike",
+    items: [
+      "Notify contact person of safe return",
+      "Stretch and hydrate after hike",
+      "Inspect gear for damage",
+      "Clean and store equipment properly",
+      "Treat minor injuries or blisters",
+      "Refill and recharge used supplies",
+      "Review trail experience and notes",
+      "Dispose of trash responsibly",
+      "Back up photos or GPS tracks if desired",
+      "Plan improvements for future hikes",
     ],
   },
 ] as const;
@@ -1233,6 +2410,586 @@ const WEDDING_EVENT_CHECKLIST = [
   },
 ] as const;
 
+const CHILDRENS_PARTY_CHECKLIST = [
+  {
+    title: "Party Planning",
+    items: [
+      "Choose party date and time",
+      "Set party budget",
+      "Decide party theme",
+      "Create guest list",
+      "Send invitations",
+      "Track RSVPs",
+      "Choose party location",
+      "Plan party duration and schedule",
+      "Prepare backup plan for bad weather if outdoors",
+      "Assign responsibilities to helpers or family members",
+    ],
+  },
+  {
+    title: "Venue Preparation",
+    items: [
+      "Clean and organize party area",
+      "Arrange seating and tables",
+      "Decorate according to theme",
+      "Prepare welcome/sign-in area if needed",
+      "Ensure enough space for activities and games",
+      "Check restroom cleanliness and supplies",
+      "Verify lighting and ventilation",
+      "Prepare trash and recycling bins",
+      "Secure fragile or dangerous items away from children",
+      "Set up music or entertainment systems",
+    ],
+  },
+  {
+    title: "Food and Drinks",
+    items: [
+      "Plan party menu",
+      "Order or prepare birthday cake",
+      "Arrange snacks and finger foods",
+      "Prepare drinks and water stations",
+      "Check for food allergies or dietary restrictions",
+      "Prepare plates, cups, napkins, and utensils",
+      "Organize serving table",
+      "Keep food safely stored and refrigerated if needed",
+      "Prepare candles and cake-cutting supplies",
+      "Plan cleanup supplies for spills and messes",
+    ],
+  },
+  {
+    title: "Decorations and Supplies",
+    items: [
+      "Prepare balloons and banners",
+      "Set up themed decorations",
+      "Organize party favors or gift bags",
+      "Prepare tablecloths and centerpieces",
+      "Bring tape, scissors, and extra supplies",
+      "Arrange photo area or backdrop",
+      "Prepare birthday signs or welcome boards",
+      "Inflate balloons in advance if possible",
+      "Keep spare decorations available",
+    ],
+  },
+  {
+    title: "Entertainment and Activities",
+    items: [
+      "Plan games and activities",
+      "Prepare prizes for games",
+      "Organize music playlist",
+      "Confirm entertainer bookings if applicable",
+      "Prepare craft or activity stations",
+      "Arrange outdoor activities if applicable",
+      "Test audio/video equipment",
+      "Prepare backup indoor activities",
+      "Organize schedule for games and breaks",
+      "Ensure activities are age-appropriate",
+    ],
+  },
+  {
+    title: "Safety and Child Supervision",
+    items: [
+      "Prepare first aid kit",
+      "Ensure emergency contact information is available",
+      "Identify safe play areas",
+      "Remove hazardous objects or materials",
+      "Check childproofing of party area",
+      "Arrange adult supervision for activities",
+      "Verify pool or outdoor area safety if applicable",
+      "Keep cleaning supplies out of children's reach",
+      "Ensure exits and pathways are clear",
+      "Prepare allergy or medical information if needed",
+    ],
+  },
+  {
+    title: "Gift and Celebration Preparation",
+    items: [
+      "Prepare gift table area",
+      "Organize birthday candles and lighter",
+      "Prepare thank-you cards if desired",
+      "Arrange special moment for cake and singing",
+      "Prepare camera or phone for photos/videos",
+      "Organize birthday child's outfit",
+      "Plan timing for opening gifts if applicable",
+      "Prepare extra batteries or chargers for devices",
+    ],
+  },
+  {
+    title: "Before Guests Arrive",
+    items: [
+      "Conduct final venue walkthrough",
+      "Set up food and decorations",
+      "Confirm entertainment schedule",
+      "Prepare music and lighting",
+      "Check restroom supplies again",
+      "Ensure party supplies are accessible",
+      "Put pets in safe area if necessary",
+      "Dress birthday child and family",
+      "Prepare welcome area for guests",
+      "Relax and get ready before guests arrive",
+    ],
+  },
+  {
+    title: "During the Party",
+    items: [
+      "Welcome guests and assist arrivals",
+      "Supervise games and activities",
+      "Monitor food and drink supplies",
+      "Handle spills or accidents quickly",
+      "Take photos and videos",
+      "Keep party schedule on track",
+      "Ensure children remain safe",
+      "Assist with gift organization",
+      "Encourage participation and fun",
+      "Monitor cleanup needs during the event",
+    ],
+  },
+  {
+    title: "After the Party",
+    items: [
+      "Thank guests for attending",
+      "Collect and organize gifts",
+      "Clean party area",
+      "Dispose of trash and recycling",
+      "Store leftover food properly",
+      "Pack reusable decorations and supplies",
+      "Check for forgotten belongings",
+      "Review photos and videos",
+      "Send thank-you messages if desired",
+      "Rest and recover after the event",
+    ],
+  },
+] as const;
+
+const MUSICAL_PERFORMANCE_CHECKLIST = [
+  {
+    title: "Performance Planning",
+    items: [
+      "Confirm performance date and time",
+      "Verify venue location and access details",
+      "Review performance schedule and set times",
+      "Confirm lineup and performer responsibilities",
+      "Review event contracts and agreements",
+      "Check audience capacity and event requirements",
+      "Coordinate transportation and arrival times",
+      "Prepare emergency contact information",
+      "Review venue rules and technical requirements",
+      "Plan backup solutions for equipment or schedule issues",
+    ],
+  },
+  {
+    title: "Instruments and Music Equipment",
+    items: [
+      "Pack instruments and accessories",
+      "Check instrument condition and tuning",
+      "Bring spare strings, sticks, reeds, or picks",
+      "Pack amplifiers and cables",
+      "Test microphones and audio equipment",
+      "Bring pedals, adapters, and power supplies",
+      "Pack instrument stands",
+      "Prepare backup equipment if possible",
+      "Label all equipment and cases",
+      "Charge wireless devices and batteries",
+    ],
+  },
+  {
+    title: "Audio and Technical Setup",
+    items: [
+      "Confirm soundcheck schedule",
+      "Test PA system and speakers",
+      "Verify monitor setup",
+      "Check microphones and stands",
+      "Test mixing console and audio levels",
+      "Prepare playback tracks if needed",
+      "Verify stage lighting setup",
+      "Test in-ear monitor systems if applicable",
+      "Pack extension cords and power strips",
+      "Prepare backup audio files and USB drives",
+    ],
+  },
+  {
+    title: "Performance Materials",
+    items: [
+      "Prepare setlist",
+      "Print lyrics or sheet music if needed",
+      "Organize music folders or tablets",
+      "Prepare cue sheets for technicians",
+      "Confirm transitions between songs or acts",
+      "Prepare introductions or announcements",
+      "Review choreography or stage movements if applicable",
+      "Bring pens, markers, and tape for stage notes",
+    ],
+  },
+  {
+    title: "Clothing and Personal Preparation",
+    items: [
+      "Prepare performance outfit(s)",
+      "Pack backup clothing options",
+      "Bring comfortable shoes",
+      "Prepare makeup and grooming supplies",
+      "Bring towels and hygiene products",
+      "Pack water bottles and snacks",
+      "Carry personal medications if needed",
+      "Bring ear protection if necessary",
+      "Get adequate rest before performance",
+      "Stay hydrated throughout the day",
+    ],
+  },
+  {
+    title: "Team and Communication",
+    items: [
+      "Confirm arrival times with all performers",
+      "Share venue directions and parking details",
+      "Assign responsibilities for setup and teardown",
+      "Review communication methods during the event",
+      "Confirm backstage access passes if needed",
+      "Coordinate with event organizers and technicians",
+      "Prepare contact list for crew and performers",
+      "Review emergency procedures with team",
+    ],
+  },
+  {
+    title: "Venue and Stage Preparation",
+    items: [
+      "Inspect stage area and safety conditions",
+      "Verify backstage facilities",
+      "Organize equipment placement on stage",
+      "Test stage lighting visibility",
+      "Ensure cables are secured safely",
+      "Confirm power outlets availability",
+      "Prepare merchandise area if applicable",
+      "Verify dressing room setup",
+      "Check audience entry and seating arrangements",
+    ],
+  },
+  {
+    title: "Before the Performance",
+    items: [
+      "Arrive early at venue",
+      "Complete soundcheck and equipment testing",
+      "Tune instruments one final time",
+      "Warm up vocals or instruments",
+      "Review setlist and cues",
+      "Check stage setup and positioning",
+      "Confirm recording or streaming setup if applicable",
+      "Relax and focus mentally before performance",
+      "Ensure all performers are ready on time",
+      "Secure valuables and personal belongings",
+    ],
+  },
+  {
+    title: "During the Performance",
+    items: [
+      "Follow setlist and timing schedule",
+      "Monitor sound and technical issues",
+      "Stay hydrated during breaks",
+      "Maintain communication with sound engineers",
+      "Watch stage safety and cable placement",
+      "Engage with audience professionally",
+      "Handle unexpected issues calmly",
+      "Monitor equipment performance",
+      "Keep backup equipment accessible",
+      "Follow venue and event guidelines",
+    ],
+  },
+  {
+    title: "After the Performance",
+    items: [
+      "Thank audience, organizers, and crew",
+      "Power down and pack equipment safely",
+      "Inspect instruments and gear for damage",
+      "Collect personal belongings",
+      "Organize merchandise and payments if applicable",
+      "Clean backstage and performance area",
+      "Back up recordings or media files",
+      "Recharge batteries and devices",
+      "Review performance notes and feedback",
+      "Store equipment properly after returning home",
+    ],
+  },
+] as const;
+
+const PODCAST_RECORDING_SETUP_CHECKLIST = [
+  {
+    title: "Episode Planning",
+    items: [
+      "Define podcast episode topic",
+      "Prepare episode outline or script",
+      "Confirm guest participation if applicable",
+      "Schedule recording date and time",
+      "Share recording instructions with guests",
+      "Prepare interview questions or discussion points",
+      "Review episode goals and key messages",
+      "Plan episode duration and segment timing",
+      "Prepare backup topics or filler content",
+      "Confirm release schedule and deadlines",
+    ],
+  },
+  {
+    title: "Recording Space Preparation",
+    items: [
+      "Choose quiet recording location",
+      "Minimize background noise",
+      "Turn off noisy appliances and notifications",
+      "Close windows and doors",
+      "Test room acoustics and echo levels",
+      "Prepare comfortable seating",
+      "Arrange proper lighting if video recording",
+      "Ensure recording area is clean and organized",
+      "Place “Recording in Progress” notice if needed",
+      "Prepare water and refreshments",
+    ],
+  },
+  {
+    title: "Audio Equipment Setup",
+    items: [
+      "Set up microphones",
+      "Test microphone positioning",
+      "Attach pop filters or windshields",
+      "Connect audio interface or mixer",
+      "Test headphones and monitoring audio",
+      "Check microphone levels and gain settings",
+      "Prepare backup microphone if available",
+      "Organize cables and connections",
+      "Ensure all equipment is powered properly",
+      "Test audio quality before recording",
+    ],
+  },
+  {
+    title: "Computer and Software Preparation",
+    items: [
+      "Charge laptop or recording devices",
+      "Open recording software",
+      "Verify recording settings and audio format",
+      "Create project/session file",
+      "Test software input/output devices",
+      "Prepare backup recording solution",
+      "Check available storage space",
+      "Disable unnecessary applications",
+      "Turn off notifications and alerts",
+      "Verify internet connection if remote recording",
+    ],
+  },
+  {
+    title: "Guest and Remote Recording Setup",
+    items: [
+      "Confirm guest connection details",
+      "Test remote recording platform",
+      "Verify guest microphone and audio quality",
+      "Share headphone and microphone recommendations",
+      "Confirm recording permissions and consent",
+      "Prepare communication backup method",
+      "Test video connection if applicable",
+      "Confirm time zone and schedule coordination",
+    ],
+  },
+  {
+    title: "Podcast Branding and Materials",
+    items: [
+      "Prepare intro and outro music",
+      "Organize sponsor or advertisement notes",
+      "Prepare episode title ideas",
+      "Verify branding assets and graphics",
+      "Prepare social media promotion notes",
+      "Organize sound effects if needed",
+      "Review call-to-action messages",
+      "Prepare show notes template",
+    ],
+  },
+  {
+    title: "Before Recording Starts",
+    items: [
+      "Conduct final audio test",
+      "Check recording levels for all participants",
+      "Verify backup recording is active",
+      "Silence phones and devices",
+      "Review episode structure with participants",
+      "Prepare notes and talking points",
+      "Warm up voice and speaking pace",
+      "Confirm all participants are ready",
+      "Start recording early for safety buffer",
+      "Take a deep breath and relax before starting",
+    ],
+  },
+  {
+    title: "During Recording",
+    items: [
+      "Monitor audio levels continuously",
+      "Speak clearly and consistently",
+      "Minimize interruptions and background noise",
+      "Keep water nearby",
+      "Follow episode outline while staying natural",
+      "Mark mistakes or retake moments if needed",
+      "Monitor guest engagement and pacing",
+      "Keep track of recording time",
+      "Save project periodically if possible",
+      "Maintain positive energy and flow",
+    ],
+  },
+  {
+    title: "After Recording",
+    items: [
+      "Stop and save recording properly",
+      "Back up audio files immediately",
+      "Label and organize files clearly",
+      "Review audio quality briefly",
+      "Note editing points or corrections",
+      "Thank guests and participants",
+      "Export or upload files if needed",
+      "Recharge or power down equipment",
+      "Clean and store recording gear",
+      "Schedule editing and publishing tasks",
+    ],
+  },
+] as const;
+
+const PHOTOGRAPHY_DRONE_MISSION_CHECKLIST = [
+  {
+    title: "Mission Planning",
+    items: [
+      "Define mission objectives and shot list",
+      "Confirm flight location and access permissions",
+      "Review local drone laws and regulations",
+      "Check restricted or controlled airspace",
+      "Verify required licenses or certifications",
+      "Review weather forecast and wind conditions",
+      "Plan flight route and shooting angles",
+      "Identify safe takeoff and landing zones",
+      "Prepare backup flight plan if conditions change",
+      "Inform team or observers about mission details",
+    ],
+  },
+  {
+    title: "Drone Inspection",
+    items: [
+      "Inspect drone body for visible damage",
+      "Verify propellers are secure and undamaged",
+      "Check motors for debris or obstruction",
+      "Inspect landing gear condition",
+      "Confirm gimbal movement and stabilization",
+      "Clean camera lens and sensors",
+      "Verify firmware is updated",
+      "Check SD card availability and storage space",
+      "Ensure GPS system is functioning properly",
+      "Test remote controller operation",
+    ],
+  },
+  {
+    title: "Battery and Power Management",
+    items: [
+      "Fully charge drone batteries",
+      "Fully charge controller batteries",
+      "Charge mobile device or tablet",
+      "Bring spare batteries",
+      "Inspect batteries for swelling or damage",
+      "Verify battery locking mechanisms",
+      "Pack charging equipment and cables",
+      "Check battery temperature before flight",
+      "Plan battery usage for mission duration",
+    ],
+  },
+  {
+    title: "Camera and Photography Setup",
+    items: [
+      "Configure camera resolution and frame rate",
+      "Set photo format (RAW/JPEG)",
+      "Configure exposure and white balance",
+      "Adjust ISO and shutter speed settings",
+      "Verify memory card formatting",
+      "Test camera recording functionality",
+      "Prepare ND filters if needed",
+      "Configure gimbal angle and stabilization",
+      "Review planned compositions and framing",
+      "Test focus and image sharpness",
+    ],
+  },
+  {
+    title: "Flight Environment Assessment",
+    items: [
+      "Inspect takeoff and landing area",
+      "Check for nearby obstacles and hazards",
+      "Assess electromagnetic interference risks",
+      "Evaluate lighting conditions and sun position",
+      "Confirm safe emergency landing areas",
+      "Check visibility and weather stability",
+      "Assess presence of people, vehicles, or animals",
+      "Verify GPS signal strength",
+      "Review terrain elevation and surroundings",
+    ],
+  },
+  {
+    title: "Navigation and Communication",
+    items: [
+      "Load flight route or waypoints if applicable",
+      "Test communication between drone and controller",
+      "Verify return-to-home settings",
+      "Confirm home point accuracy",
+      "Ensure maps and offline navigation are available",
+      "Prepare communication devices for team coordination",
+      "Save emergency contact numbers",
+      "Check mobile network availability if needed",
+    ],
+  },
+  {
+    title: "Safety and Emergency Preparation",
+    items: [
+      "Pack first aid kit",
+      "Carry fire extinguisher if required",
+      "Prepare emergency landing procedures",
+      "Review signal loss procedures",
+      "Verify obstacle avoidance systems",
+      "Prepare weather emergency plan",
+      "Carry flashlight or headlamp if needed",
+      "Bring reflective vest or safety gear if required",
+      "Review local emergency regulations",
+    ],
+  },
+  {
+    title: "Before Takeoff",
+    items: [
+      "Conduct final drone inspection",
+      "Confirm all equipment is secured",
+      "Verify camera settings one final time",
+      "Confirm sufficient satellite connection",
+      "Start video recording if needed",
+      "Check battery levels again",
+      "Review flight path and objectives",
+      "Ensure takeoff area is clear",
+      "Announce takeoff to team or observers",
+      "Perform controlled takeoff and hover test",
+    ],
+  },
+  {
+    title: "During the Mission",
+    items: [
+      "Maintain visual line of sight",
+      "Monitor battery levels continuously",
+      "Watch telemetry and GPS signal",
+      "Monitor weather and wind changes",
+      "Adjust camera settings as lighting changes",
+      "Avoid restricted or crowded areas",
+      "Maintain safe altitude and distance",
+      "Capture backup shots and angles",
+      "Monitor storage capacity during recording",
+      "Be prepared for manual return or emergency landing",
+    ],
+  },
+  {
+    title: "After Landing",
+    items: [
+      "Power off drone and controller safely",
+      "Inspect drone for damage or overheating",
+      "Remove and store batteries safely",
+      "Back up photos and videos immediately",
+      "Review captured footage for quality",
+      "Log mission details and observations",
+      "Clean drone and camera equipment",
+      "Recharge batteries if needed",
+      "Pack all equipment securely",
+      "Report incidents or anomalies if required",
+    ],
+  },
+] as const;
+
 const BUSINESS_CONFERENCE_CHECKLIST = [
   {
     title: "Conference Planning",
@@ -1834,6 +3591,325 @@ const OFFICE_LAUNCH_CHECKLIST = [
       "Update operational documentation",
       "Plan improvements and optimizations",
       "Conduct post-launch project review",
+    ],
+  },
+] as const;
+
+const SPRING_CLEANING_HOME_CHECKLIST = [
+  {
+    title: "Planning and Preparation",
+    items: [
+      "Create a room-by-room cleaning plan",
+      "Set cleaning schedule and priorities",
+      "Gather cleaning supplies and tools",
+      "Prepare trash bags and storage boxes",
+      "Open windows for ventilation",
+      "Prepare donation or recycling boxes",
+      "Check weather for outdoor maintenance tasks",
+      "Wear protective gloves and clothing",
+      "Prepare music or entertainment for motivation",
+      "Ensure cleaning equipment is working properly",
+    ],
+  },
+  {
+    title: "General Decluttering",
+    items: [
+      "Remove unnecessary items from each room",
+      "Organize closets and storage spaces",
+      "Donate unused clothing and belongings",
+      "Dispose of broken or expired items",
+      "Organize paperwork and documents",
+      "Recycle old electronics and batteries properly",
+      "Sort seasonal decorations and supplies",
+      "Label storage containers if needed",
+      "Organize cables and chargers",
+      "Clean and organize entryways",
+    ],
+  },
+  {
+    title: "Living Room and Common Areas",
+    items: [
+      "Dust furniture and shelves",
+      "Clean windows and mirrors",
+      "Vacuum carpets and rugs",
+      "Mop hard floors",
+      "Clean curtains or blinds",
+      "Wipe down electronics and remote controls",
+      "Clean light fixtures and ceiling fans",
+      "Organize books, magazines, and decorations",
+      "Vacuum upholstered furniture",
+      "Check smoke detectors and batteries",
+    ],
+  },
+  {
+    title: "Kitchen Cleaning and Maintenance",
+    items: [
+      "Clean refrigerator and freezer",
+      "Dispose of expired food",
+      "Wipe kitchen cabinets and countertops",
+      "Deep clean oven and stovetop",
+      "Clean microwave and small appliances",
+      "Sanitize sink and garbage disposal",
+      "Organize pantry and food storage",
+      "Mop kitchen floor",
+      "Check plumbing for leaks",
+      "Inspect fire extinguisher and kitchen safety equipment",
+    ],
+  },
+  {
+    title: "Bathroom Cleaning and Maintenance",
+    items: [
+      "Scrub toilets, sinks, and showers",
+      "Clean mirrors and glass surfaces",
+      "Wash bath mats and towels",
+      "Check for mold or mildew",
+      "Organize toiletries and cabinets",
+      "Clean drains and remove buildup",
+      "Test ventilation fan",
+      "Inspect plumbing for leaks",
+      "Replace worn shower curtains or liners",
+      "Refill hygiene and cleaning supplies",
+    ],
+  },
+  {
+    title: "Bedroom Cleaning and Organization",
+    items: [
+      "Wash bedding and pillows",
+      "Rotate or flip mattresses if needed",
+      "Vacuum under beds and furniture",
+      "Organize closets and drawers",
+      "Donate unused clothing",
+      "Dust furniture and decor",
+      "Clean windows and blinds",
+      "Organize bedside tables",
+      "Check smoke alarms in bedrooms",
+      "Store seasonal clothing appropriately",
+    ],
+  },
+  {
+    title: "Laundry and Utility Areas",
+    items: [
+      "Clean washing machine and dryer",
+      "Remove lint from dryer vents",
+      "Organize cleaning supplies",
+      "Inspect water heater for leaks",
+      "Check utility connections and hoses",
+      "Sweep and mop floors",
+      "Organize tools and maintenance supplies",
+      "Replace HVAC filters if needed",
+      "Test sump pump if applicable",
+      "Inspect electrical panels for issues",
+    ],
+  },
+  {
+    title: "Outdoor Cleaning and Maintenance",
+    items: [
+      "Sweep patios, decks, and balconies",
+      "Clean outdoor furniture",
+      "Wash exterior windows",
+      "Inspect roof and gutters",
+      "Remove leaves and debris",
+      "Check fences and gates",
+      "Inspect exterior lighting",
+      "Clean garage or storage shed",
+      "Check garden tools and equipment",
+      "Prepare lawn and garden for the season",
+    ],
+  },
+  {
+    title: "Home Safety and Maintenance",
+    items: [
+      "Test smoke and carbon monoxide detectors",
+      "Inspect fire extinguishers",
+      "Check door and window locks",
+      "Inspect electrical outlets and cords",
+      "Verify emergency supplies and first aid kit",
+      "Test heating and cooling systems",
+      "Inspect for signs of pests",
+      "Check caulking and weather seals",
+      "Review home security systems",
+      "Prepare maintenance repair list",
+    ],
+  },
+  {
+    title: "Final Review and Organization",
+    items: [
+      "Take out trash and recycling",
+      "Return cleaning supplies to storage",
+      "Organize cleaned spaces neatly",
+      "Review completed maintenance tasks",
+      "Schedule professional repairs if needed",
+      "Back up important home documents",
+      "Refresh home decor if desired",
+      "Enjoy clean and organized living spaces",
+      "Plan regular cleaning routine moving forward",
+      "Celebrate completion of spring cleaning tasks",
+    ],
+  },
+] as const;
+
+const WINTER_HOME_PREPARATION_CHECKLIST = [
+  {
+    title: "Planning and Preparation",
+    items: [
+      "Review winter weather forecasts for the area",
+      "Create winter maintenance schedule",
+      "Prepare emergency contact information",
+      "Inspect property insurance coverage",
+      "Gather winter maintenance tools and supplies",
+      "Schedule professional inspections if needed",
+      "Plan snow removal arrangements",
+      "Prepare backup heating options",
+      "Inform neighbors or property manager if property will be vacant",
+      "Check local winter safety recommendations",
+    ],
+  },
+  {
+    title: "Heating System Preparation",
+    items: [
+      "Test heating system functionality",
+      "Replace HVAC or furnace filters",
+      "Schedule furnace or boiler maintenance",
+      "Inspect radiators and vents",
+      "Test thermostats",
+      "Verify chimney and fireplace safety",
+      "Clean fireplace and remove old ash",
+      "Stock firewood if applicable",
+      "Check carbon monoxide detectors",
+      "Ensure heating fuel supply is sufficient",
+    ],
+  },
+  {
+    title: "Plumbing and Water Protection",
+    items: [
+      "Insulate exposed pipes",
+      "Drain outdoor hoses and faucets",
+      "Shut off exterior water supply if needed",
+      "Test water heater functionality",
+      "Check for plumbing leaks",
+      "Prepare pipe heating cables if necessary",
+      "Insulate water tanks and vulnerable plumbing areas",
+      "Learn location of main water shutoff valve",
+      "Prevent freezing in unused rooms",
+      "Prepare emergency plumbing repair supplies",
+    ],
+  },
+  {
+    title: "Exterior Maintenance",
+    items: [
+      "Inspect roof for damage or leaks",
+      "Clean gutters and downspouts",
+      "Remove leaves and debris from yard",
+      "Trim tree branches near roof or power lines",
+      "Inspect siding and exterior walls",
+      "Seal cracks and openings",
+      "Check foundation drainage",
+      "Inspect driveway and walkways for hazards",
+      "Store outdoor furniture safely",
+      "Prepare snow shovels and ice melt supplies",
+    ],
+  },
+  {
+    title: "Windows and Doors",
+    items: [
+      "Inspect window seals and insulation",
+      "Install weather stripping if needed",
+      "Seal air leaks around doors and windows",
+      "Check storm windows or shutters",
+      "Verify door locks function properly",
+      "Install draft blockers if necessary",
+      "Clean windows before winter season",
+      "Prepare curtains or thermal coverings",
+    ],
+  },
+  {
+    title: "Electrical and Safety Systems",
+    items: [
+      "Test smoke detectors",
+      "Test carbon monoxide alarms",
+      "Inspect electrical outlets and cords",
+      "Verify backup generators if available",
+      "Prepare flashlights and spare batteries",
+      "Check outdoor lighting functionality",
+      "Ensure emergency exits are accessible",
+      "Review home security system operation",
+      "Prepare emergency power supplies",
+      "Inspect surge protectors and breakers",
+    ],
+  },
+  {
+    title: "Interior Preparation",
+    items: [
+      "Deep clean living spaces",
+      "Store seasonal items appropriately",
+      "Prepare winter bedding and blankets",
+      "Check indoor humidity levels",
+      "Organize emergency supplies indoors",
+      "Prepare food and water reserves",
+      "Inspect furniture near heating sources",
+      "Store valuables securely if property will be vacant",
+      "Clean and inspect ventilation systems",
+      "Prepare indoor entertainment and comfort items",
+    ],
+  },
+  {
+    title: "Vacation Home Specific Tasks",
+    items: [
+      "Shut off unnecessary utilities if vacant",
+      "Set thermostat to safe minimum temperature",
+      "Arrange regular property inspections",
+      "Empty refrigerator/freezer if shutting down property",
+      "Remove perishable food items",
+      "Secure windows and doors",
+      "Stop mail or package deliveries",
+      "Notify local contacts about vacancy",
+      "Install smart monitoring devices if available",
+      "Prepare snow removal access instructions",
+    ],
+  },
+  {
+    title: "Emergency Preparedness",
+    items: [
+      "Prepare first aid kit",
+      "Store bottled water and non-perishable food",
+      "Keep emergency blankets accessible",
+      "Save emergency service numbers",
+      "Prepare battery-powered radio",
+      "Stock ice melt and sand",
+      "Keep vehicle winter emergency kit ready",
+      "Plan evacuation routes if necessary",
+      "Prepare backup communication methods",
+      "Review emergency procedures with household members",
+    ],
+  },
+  {
+    title: "Before Winter Arrives",
+    items: [
+      "Conduct final property walkthrough",
+      "Verify heating system is operating properly",
+      "Double-check insulation and weatherproofing",
+      "Ensure all emergency supplies are stocked",
+      "Test backup systems and generators",
+      "Confirm snow removal equipment is accessible",
+      "Secure all outdoor equipment and decorations",
+      "Review weather alerts and forecasts",
+      "Lock and secure all entrances",
+      "Prepare property for severe winter conditions",
+    ],
+  },
+  {
+    title: "During Winter Season",
+    items: [
+      "Monitor heating and utility systems regularly",
+      "Remove snow and ice from walkways",
+      "Check roof and gutters after storms",
+      "Watch for frozen pipes or leaks",
+      "Inspect property for storm damage",
+      "Maintain safe indoor temperature",
+      "Keep emergency supplies replenished",
+      "Monitor weather warnings and advisories",
+      "Ventilate home properly when needed",
+      "Schedule repairs promptly if issues occur",
     ],
   },
 ] as const;
@@ -4391,6 +6467,457 @@ const QA_SOFTWARE_TESTING_CHECKLIST = [
   },
 ] as const;
 
+const DAILY_OPENING_RESTAURANT_CHECKLIST = [
+  {
+    title: "Staff Preparation",
+    items: [
+      "Confirm staff attendance and schedules",
+      "Conduct opening team briefing",
+      "Assign daily responsibilities and stations",
+      "Ensure staff uniforms and hygiene standards are met",
+      "Verify employee clock-in procedures",
+      "Review reservations or special events for the day",
+      "Confirm emergency contact information is available",
+      "Check communication devices and internal systems",
+    ],
+  },
+  {
+    title: "Exterior and Entrance Inspection",
+    items: [
+      "Unlock entrances and exits",
+      "Inspect exterior cleanliness",
+      "Check signage and lighting",
+      "Clean entrance doors and windows",
+      "Inspect outdoor seating area if applicable",
+      "Remove trash or debris outside",
+      "Verify parking and access areas are safe",
+      "Ensure emergency exits are unobstructed",
+    ],
+  },
+  {
+    title: "Dining Area Preparation",
+    items: [
+      "Clean and sanitize tables and chairs",
+      "Arrange tables according to floor plan",
+      "Set up menus and promotional materials",
+      "Refill condiments and table supplies",
+      "Verify lighting and music systems",
+      "Check air conditioning/heating systems",
+      "Inspect restrooms for cleanliness and supplies",
+      "Ensure floors are clean and hazard-free",
+      "Prepare reservation tables if needed",
+      "Verify POS terminals are operational",
+    ],
+  },
+  {
+    title: "Kitchen and Food Preparation",
+    items: [
+      "Wash hands and sanitize workstations",
+      "Inspect kitchen cleanliness",
+      "Verify refrigeration and freezer temperatures",
+      "Check food inventory and stock levels",
+      "Inspect ingredient freshness and expiration dates",
+      "Prepare food prep stations",
+      "Refill cooking supplies and utensils",
+      "Verify cooking equipment functionality",
+      "Prepare daily specials and menu items",
+      "Ensure food safety procedures are followed",
+    ],
+  },
+  {
+    title: "Beverage and Bar Setup",
+    items: [
+      "Prepare coffee machines and grinders",
+      "Refill coffee beans, milk, and supplies",
+      "Test beverage equipment functionality",
+      "Prepare bar area and stock beverages",
+      "Refill ice machines and ice bins",
+      "Inspect glassware and cups for cleanliness",
+      "Prepare garnishes and drink ingredients",
+      "Verify water filtration systems if applicable",
+      "Stock takeaway cups, lids, and straws",
+    ],
+  },
+  {
+    title: "Cash Register and POS Systems",
+    items: [
+      "Power on POS systems and terminals",
+      "Verify internet and network connectivity",
+      "Prepare cash drawers with starting cash",
+      "Test receipt printers and scanners",
+      "Verify payment terminal functionality",
+      "Check online ordering systems if applicable",
+      "Review previous day’s reports if needed",
+      "Confirm backup payment procedures",
+    ],
+  },
+  {
+    title: "Safety and Compliance",
+    items: [
+      "Test fire alarms and emergency lighting if required",
+      "Inspect fire extinguishers",
+      "Verify first aid kit availability",
+      "Check gas and electrical systems for issues",
+      "Ensure cleaning chemicals are stored safely",
+      "Review food safety logs",
+      "Confirm security cameras are functioning",
+      "Verify emergency exits and signage",
+      "Inspect floors for slip hazards",
+    ],
+  },
+  {
+    title: "Inventory and Supply Check",
+    items: [
+      "Refill napkins, utensils, and packaging supplies",
+      "Check takeaway and delivery packaging stock",
+      "Verify cleaning supply levels",
+      "Inspect restroom supplies",
+      "Replenish hand sanitizer stations",
+      "Check disposable gloves and hygiene supplies",
+      "Confirm vendor deliveries if scheduled",
+      "Organize storage and stock rotation",
+    ],
+  },
+  {
+    title: "Before Opening to Customers",
+    items: [
+      "Conduct final walkthrough of restaurant/café",
+      "Verify all equipment is operational",
+      "Ensure music and lighting are set correctly",
+      "Confirm staff readiness at stations",
+      "Unlock customer entrances",
+      "Turn on exterior/open signs",
+      "Review reservations and expected peak hours",
+      "Prepare customer service materials",
+      "Ensure all areas are clean and organized",
+      "Open for service on schedule",
+    ],
+  },
+  {
+    title: "During Opening Hours",
+    items: [
+      "Monitor cleanliness continuously",
+      "Refill supplies as needed",
+      "Check customer seating flow",
+      "Monitor kitchen and service efficiency",
+      "Address customer issues promptly",
+      "Track inventory shortages during service",
+      "Maintain food safety and hygiene standards",
+      "Ensure smooth communication between staff",
+    ],
+  },
+  {
+    title: "Post-Opening Review",
+    items: [
+      "Note any maintenance or operational issues",
+      "Record missing inventory or supply needs",
+      "Review customer feedback from opening period",
+      "Adjust staffing or workflow if necessary",
+      "Prepare notes for management or next shift",
+    ],
+  },
+] as const;
+
+const CLOSING_STORE_CHECKLIST = [
+  {
+    title: "Customer Service and Closing Procedures",
+    items: [
+      "Announce closing time to customers",
+      "Assist remaining customers with final purchases",
+      "Lock entrance doors at closing time",
+      "Ensure all customers have exited safely",
+      "Check fitting rooms, restrooms, and public areas",
+      "Secure cash registers and POS stations",
+      "Complete final customer transactions",
+      "Turn off promotional displays or announcements",
+      "Record unresolved customer issues if necessary",
+      "Confirm no unauthorized persons remain inside",
+    ],
+  },
+  {
+    title: "Cash Handling and Financial Tasks",
+    items: [
+      "Count cash drawers and registers",
+      "Verify daily sales totals",
+      "Prepare cash deposits",
+      "Reconcile POS reports and transactions",
+      "Secure cash and financial documents",
+      "Process end-of-day payment reports",
+      "Check credit card terminal settlements",
+      "Report discrepancies or unusual transactions",
+      "Lock cash drawers and safes",
+      "Store receipts and accounting records properly",
+    ],
+  },
+  {
+    title: "Cleaning and Organization",
+    items: [
+      "Clean floors and surfaces",
+      "Empty trash bins and replace liners",
+      "Organize shelves and displays",
+      "Return misplaced items to correct locations",
+      "Clean windows and entrance areas",
+      "Sanitize counters and customer contact surfaces",
+      "Clean restrooms and refill supplies",
+      "Sweep and mop designated areas",
+      "Organize stockroom and storage spaces",
+      "Remove food or perishable waste if applicable",
+    ],
+  },
+  {
+    title: "Inventory and Stock Management",
+    items: [
+      "Restock shelves if required",
+      "Check low inventory items",
+      "Record damaged or missing products",
+      "Verify deliveries scheduled for next day",
+      "Organize incoming shipment areas",
+      "Rotate stock if needed",
+      "Secure high-value inventory",
+      "Update inventory management system",
+      "Prepare reorder notes for management",
+      "Ensure storage areas are locked and organized",
+    ],
+  },
+  {
+    title: "Equipment and Technology Shutdown",
+    items: [
+      "Log out of POS systems",
+      "Shut down computers and terminals",
+      "Turn off printers and office equipment",
+      "Verify backup systems completed successfully",
+      "Charge handheld scanners or devices",
+      "Power down unnecessary electronics",
+      "Turn off music and entertainment systems",
+      "Check security cameras and recording systems",
+      "Ensure alarms and monitoring systems are operational",
+      "Verify internet/network equipment status if required",
+    ],
+  },
+  {
+    title: "Safety and Security Checks",
+    items: [
+      "Lock all doors and windows",
+      "Inspect emergency exits",
+      "Ensure fire extinguishers are accessible",
+      "Turn off unnecessary lights",
+      "Verify gas appliances are turned off if applicable",
+      "Check electrical equipment for safety",
+      "Confirm alarm systems are activated",
+      "Inspect for hazards or maintenance issues",
+      "Secure confidential documents",
+      "Verify all employees have exited safely",
+    ],
+  },
+  {
+    title: "Staff Closing Responsibilities",
+    items: [
+      "Confirm all staff clocked out properly",
+      "Review shift notes or incidents",
+      "Assign opening tasks for next day if needed",
+      "Record maintenance or repair issues",
+      "Verify uniforms or equipment are returned if required",
+      "Ensure break rooms and staff areas are clean",
+      "Confirm communication logs are updated",
+      "Lock employee entrances and access points",
+    ],
+  },
+  {
+    title: "Exterior Inspection",
+    items: [
+      "Turn off exterior displays or signage if necessary",
+      "Check parking lot or surrounding area",
+      "Secure outdoor furniture or equipment",
+      "Ensure exterior lighting is functioning appropriately",
+      "Remove trash or debris near entrance",
+      "Confirm delivery areas are secure",
+      "Inspect storefront appearance",
+    ],
+  },
+  {
+    title: "Final Closing Walkthrough",
+    items: [
+      "Conduct full walkthrough of the establishment",
+      "Double-check all rooms and storage areas",
+      "Verify all systems are secured",
+      "Ensure all appliances are turned off if required",
+      "Confirm alarms are activated",
+      "Lock final exit door securely",
+      "Notify security or management if necessary",
+      "Document closing completion if required",
+      "Leave premises safely and securely",
+      "Prepare for next business day operations",
+    ],
+  },
+] as const;
+
+const GYM_OPENING_CLOSING_CHECKLIST = [
+  {
+    title: "Opening Checklist",
+    items: [
+      "Confirm staff attendance and schedules",
+      "Conduct opening team briefing",
+      "Assign cleaning and operational responsibilities",
+      "Ensure staff uniforms and hygiene standards are met",
+      "Verify employee clock-in procedures",
+      "Review class schedules and trainer appointments",
+      "Confirm emergency contact information is accessible",
+      "Check communication devices and internal systems",
+    ],
+  },
+  {
+    title: "Facility Inspection",
+    items: [
+      "Unlock entrances and emergency exits",
+      "Inspect gym exterior and parking areas",
+      "Turn on lights, ventilation, and climate control systems",
+      "Check cleanliness of workout areas",
+      "Inspect locker rooms and restrooms",
+      "Refill soap, paper towels, and sanitizers",
+      "Verify drinking water stations are functioning",
+      "Ensure floors are dry and hazard-free",
+      "Inspect mirrors and windows for cleanliness",
+      "Confirm music and display systems are operational",
+    ],
+  },
+  {
+    title: "Equipment Inspection",
+    items: [
+      "Test cardio machines (treadmills, bikes, ellipticals)",
+      "Inspect weight machines and cables",
+      "Check free weights and racks for organization",
+      "Verify safety pins and clips are available",
+      "Test functional training equipment",
+      "Inspect mats and stretching areas",
+      "Check TVs and entertainment systems",
+      "Report damaged or malfunctioning equipment",
+      "Ensure emergency stop buttons function correctly",
+      "Clean and sanitize frequently used equipment",
+    ],
+  },
+  {
+    title: "Reception and Administrative Setup",
+    items: [
+      "Power on computers and POS systems",
+      "Verify membership management software is working",
+      "Prepare cash drawer if applicable",
+      "Test barcode/member access scanners",
+      "Review scheduled personal training sessions",
+      "Prepare towels or rental equipment if offered",
+      "Check online booking and check-in systems",
+      "Verify internet and Wi-Fi connectivity",
+      "Organize front desk and welcome area",
+      "Ensure promotional materials are displayed",
+    ],
+  },
+  {
+    title: "Safety and Security",
+    items: [
+      "Test emergency lighting if required",
+      "Verify fire extinguishers are accessible",
+      "Check first aid kit supplies",
+      "Ensure AED device is operational if available",
+      "Inspect emergency exits and signage",
+      "Verify security cameras are functioning",
+      "Test alarm systems if applicable",
+      "Ensure cleaning chemicals are stored safely",
+      "Review safety procedures with staff",
+    ],
+  },
+  {
+    title: "Before Opening to Members",
+    items: [
+      "Conduct final walkthrough of facility",
+      "Confirm all equipment is operational",
+      "Ensure locker rooms are fully stocked",
+      "Turn on entrance/open signs",
+      "Verify class rooms and studios are ready",
+      "Confirm trainers and instructors are prepared",
+      "Open facility on schedule",
+      "Welcome first members professionally",
+    ],
+  },
+  {
+    title: "Closing Checklist",
+    items: [
+      "Announce closing time to members",
+      "Ensure all members exit the facility safely",
+      "Check locker rooms, showers, and studios",
+      "Confirm all rental equipment is returned",
+      "Lock entrances after closing",
+      "Verify no unauthorized persons remain inside",
+      "Record unresolved customer issues if needed",
+    ],
+  },
+  {
+    title: "Cleaning and Sanitization",
+    items: [
+      "Sanitize all gym equipment",
+      "Wipe down cardio and weight machines",
+      "Clean mirrors and windows",
+      "Vacuum or mop floors",
+      "Empty trash bins and replace liners",
+      "Clean locker rooms and showers",
+      "Refill hygiene and cleaning supplies",
+      "Organize weights and equipment properly",
+      "Disinfect high-touch surfaces",
+      "Remove towels and laundry if applicable",
+    ],
+  },
+  {
+    title: "Equipment and Maintenance Checks",
+    items: [
+      "Power down cardio equipment if required",
+      "Inspect equipment for damage or wear",
+      "Report maintenance issues",
+      "Charge wireless devices or tablets if applicable",
+      "Store portable equipment securely",
+      "Verify all TVs and sound systems are turned off",
+      "Check ventilation and climate systems",
+      "Ensure all equipment is safely stored",
+    ],
+  },
+  {
+    title: "Reception and Administrative Tasks",
+    items: [
+      "Count cash drawer and reconcile transactions",
+      "Log out of POS and management systems",
+      "Process end-of-day reports",
+      "Secure financial documents and cash deposits",
+      "Back up attendance or booking data if required",
+      "Review membership or booking issues",
+      "Prepare schedule and notes for next day",
+      "Secure member information and records",
+    ],
+  },
+  {
+    title: "Safety and Security Closing Checks",
+    items: [
+      "Turn off unnecessary lights",
+      "Verify emergency exits are secure",
+      "Check fire extinguishers and safety equipment visibility",
+      "Ensure all doors and windows are locked",
+      "Activate alarm and security systems",
+      "Verify security cameras are recording properly",
+      "Inspect facility for hazards or leaks",
+      "Secure cleaning chemicals and supplies",
+      "Confirm all staff have exited safely",
+    ],
+  },
+  {
+    title: "Final Walkthrough",
+    items: [
+      "Conduct complete walkthrough of facility",
+      "Double-check all rooms and storage areas",
+      "Ensure all systems are shut down properly",
+      "Confirm music and entertainment systems are off",
+      "Lock final exit securely",
+      "Document closing completion if required",
+      "Leave premises safely and securely",
+    ],
+  },
+] as const;
+
 const SAMPLE_USERS = [
   { email: "steve@gmail.com", name: "Steve" },
   { email: "peter@gmail.com", name: "Peter" },
@@ -4463,6 +6990,1186 @@ async function seedSampleUsers() {
   }
 }
 
+const FIRST_AID_KIT_CHECKLIST = [
+  {
+    title: "Inspection Preparation",
+    items: [
+      "Choose clean and well-lit inspection area",
+      "Gather inventory list for the first aid kit",
+      "Check inspection date and maintenance schedule",
+      "Wear clean gloves if necessary",
+      "Prepare replacement supplies if available",
+      "Verify emergency contact information is included",
+      "Ensure kit is easily accessible",
+      "Check kit labeling and identification",
+    ],
+  },
+  {
+    title: "General Kit Condition",
+    items: [
+      "Inspect first aid kit container for damage",
+      "Verify kit is clean and dry",
+      "Check latches, zippers, or seals",
+      "Ensure waterproof protection if applicable",
+      "Confirm kit organization and compartments",
+      "Remove dirt, dust, or debris",
+      "Verify instruction manual is included",
+      "Ensure flashlight or emergency tools are functional",
+    ],
+  },
+  {
+    title: "Medical Supply Inspection",
+    items: [
+      "Check expiration dates on all medical supplies",
+      "Replace expired items",
+      "Verify sterile packaging is intact",
+      "Inspect adhesive bandages for usability",
+      "Check gauze pads and rolls",
+      "Inspect medical tape condition",
+      "Verify antiseptic wipes and solutions",
+      "Check burn treatment supplies",
+      "Inspect gloves for tears or damage",
+      "Ensure scissors and tweezers are clean and functional",
+    ],
+  },
+  {
+    title: "Medication Inspection",
+    items: [
+      "Check expiration dates on medications",
+      "Replace expired pain relievers",
+      "Inspect allergy medication availability",
+      "Verify antiseptic creams or ointments",
+      "Check motion sickness medication if included",
+      "Ensure dosage instructions are readable",
+      "Store medications properly according to guidelines",
+      "Remove damaged or leaking medication packages",
+    ],
+  },
+  {
+    title: "Emergency Equipment Check",
+    items: [
+      "Test flashlight functionality",
+      "Replace flashlight batteries if needed",
+      "Inspect emergency whistle",
+      "Check CPR mask or shield condition",
+      "Verify emergency blanket packaging",
+      "Inspect instant cold packs",
+      "Check thermometer functionality",
+      "Verify emergency contact cards are current",
+      "Ensure multi-tool or knife is functional if included",
+    ],
+  },
+  {
+    title: "Inventory and Restocking",
+    items: [
+      "Count remaining supplies",
+      "Refill low-stock items",
+      "Replace used or missing supplies",
+      "Verify kit matches recommended inventory list",
+      "Add specialized supplies if needed for environment or activities",
+      "Organize items for easy access",
+      "Remove unnecessary or damaged items",
+      "Label newly added supplies if necessary",
+    ],
+  },
+  {
+    title: "Hygiene and Safety",
+    items: [
+      "Ensure hand sanitizer is available",
+      "Verify disposable gloves quantity",
+      "Inspect face masks if included",
+      "Check biohazard disposal bags if applicable",
+      "Confirm cleanliness of reusable tools",
+      "Sanitize reusable equipment",
+      "Store sharp objects safely",
+      "Ensure no contamination is present inside kit",
+    ],
+  },
+  {
+    title: "Specialized Equipment (if applicable)",
+    items: [
+      "Inspect splints or braces",
+      "Check blood pressure monitor functionality",
+      "Verify epinephrine auto-injector expiration date",
+      "Test communication devices if included",
+      "Inspect trauma shears and emergency tools",
+      "Verify oxygen supplies if applicable",
+      "Check emergency airway equipment condition",
+    ],
+  },
+  {
+    title: "Before Completing Inspection",
+    items: [
+      "Reorganize kit contents neatly",
+      "Ensure quick-access items are visible",
+      "Confirm all compartments close securely",
+      "Update inspection log or checklist",
+      "Record replaced or expired items",
+      "Schedule next inspection date",
+      "Return kit to accessible location",
+      "Inform responsible persons of completed inspection",
+    ],
+  },
+  {
+    title: "Emergency Readiness Review",
+    items: [
+      "Review basic first aid procedures",
+      "Ensure users know kit location",
+      "Confirm emergency phone numbers are updated",
+      "Verify accessibility during emergencies",
+      "Review evacuation or emergency response plans",
+      "Train household/team members on kit usage if needed",
+      "Ensure portable kits are travel-ready",
+      "Keep first aid kit protected from extreme temperatures",
+    ],
+  },
+] as const;
+
+async function seedFirstAidKitTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Safety",
+      slug: "safety",
+      description: "Checklist templates for safety and emergency preparedness.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Safety",
+        description: "Checklist templates for safety and emergency preparedness.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "First Aid",
+      slug: "first-aid",
+      description: "First aid kit inspection and readiness.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "First Aid",
+        description: "First aid kit inspection and readiness.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "First Aid Kit Inspection Checklist",
+      slug: "first-aid-kit-inspection-checklist",
+      description: "Inspection checklist to ensure first aid kits are stocked, functional, and ready for emergencies.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "First Aid Kit Inspection Checklist",
+        description: "Inspection checklist to ensure first aid kits are stocked, functional, and ready for emergencies.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of FIRST_AID_KIT_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+const WEEKLY_MEAL_PREP_CHECKLIST = [
+  {
+    title: "Meal Planning",
+    items: [
+      "Decide meals for the week",
+      "Set nutrition and calorie goals",
+      "Review dietary restrictions or preferences",
+      "Plan breakfasts, lunches, dinners, and snacks",
+      "Choose recipes for the week",
+      "Balance proteins, carbohydrates, and vegetables",
+      "Plan portion sizes",
+      "Schedule meal prep day and cooking time",
+      "Include quick or backup meal options",
+      "Check upcoming events or busy days affecting meals",
+    ],
+  },
+  {
+    title: "Inventory and Kitchen Check",
+    items: [
+      "Check pantry ingredients",
+      "Inspect refrigerator contents",
+      "Check freezer inventory",
+      "Identify ingredients that need to be used soon",
+      "Verify spices and seasonings availability",
+      "Check cooking oil and condiments",
+      "Review expiration dates on food items",
+      "Ensure food storage containers are available",
+      "Check meal prep tools and equipment",
+      "Prepare shopping list for missing ingredients",
+    ],
+  },
+  {
+    title: "Grocery Shopping",
+    items: [
+      "Organize shopping list by category",
+      "Purchase fresh fruits and vegetables",
+      "Buy protein sources (meat, fish, eggs, tofu, etc.)",
+      "Purchase grains and carbohydrates",
+      "Buy healthy snacks",
+      "Purchase beverages if needed",
+      "Buy meal prep containers or storage bags if necessary",
+      "Check for discounts or bulk-buy opportunities",
+      "Verify cold/frozen items stay refrigerated during transport",
+      "Store groceries properly after shopping",
+    ],
+  },
+  {
+    title: "Food Preparation",
+    items: [
+      "Wash fruits and vegetables",
+      "Chop vegetables and ingredients",
+      "Marinate proteins if needed",
+      "Cook grains and carbohydrates",
+      "Prepare proteins for multiple meals",
+      "Portion snacks into containers",
+      "Prepare sauces or dressings",
+      "Label containers with meal names or dates",
+      "Cool cooked food before refrigeration",
+      "Store meals safely in refrigerator or freezer",
+    ],
+  },
+  {
+    title: "Kitchen Organization and Cleaning",
+    items: [
+      "Clean countertops and prep areas",
+      "Sanitize cutting boards and utensils",
+      "Wash dishes and cookware",
+      "Organize refrigerator and freezer space",
+      "Dispose of food waste properly",
+      "Empty trash and recycling bins",
+      "Store ingredients and leftovers correctly",
+      "Prepare clean containers for next use",
+      "Check refrigerator temperature settings",
+      "Refill kitchen essentials if needed",
+    ],
+  },
+  {
+    title: "Nutrition and Health",
+    items: [
+      "Track protein and nutrient intake",
+      "Prepare balanced meal portions",
+      "Limit processed or unhealthy foods",
+      "Include healthy snacks and hydration options",
+      "Plan meals around fitness or activity schedule",
+      "Prepare meals that support energy and recovery",
+      "Avoid excessive sugar or sodium",
+      "Monitor portion control",
+      "Include fiber-rich foods and vegetables",
+      "Prepare hydration reminders or water bottles",
+    ],
+  },
+  {
+    title: "Time and Workflow Optimization",
+    items: [
+      "Group similar cooking tasks together",
+      "Use timers for cooking efficiency",
+      "Prioritize meals with shortest shelf life",
+      "Freeze meals for later in the week if necessary",
+      "Prepare grab-and-go meals for busy days",
+      "Minimize food waste through planning",
+      "Batch cook ingredients when possible",
+      "Organize prep sequence efficiently",
+      "Keep frequently used tools accessible",
+      "Plan cleanup during cooking process",
+    ],
+  },
+  {
+    title: "Before Finishing Meal Prep",
+    items: [
+      "Double-check meal portions and labels",
+      "Verify food is stored safely",
+      "Ensure refrigerator/freezer doors are sealed properly",
+      "Review meal schedule for the week",
+      "Prepare utensils or lunch bags if needed",
+      "Set reminders for defrosting frozen meals",
+      "Confirm enough snacks and drinks are available",
+      "Take note of ingredients running low",
+      "Clean and reset kitchen for next use",
+      "Relax and enjoy completed meal prep",
+    ],
+  },
+  {
+    title: "During the Week",
+    items: [
+      "Monitor freshness of prepared meals",
+      "Reheat food safely",
+      "Rotate meals to avoid spoilage",
+      "Refill water and healthy snack supplies",
+      "Adjust meal plan if schedule changes",
+      "Track nutrition goals and energy levels",
+      "Freeze leftovers before expiration if needed",
+      "Restock missing ingredients when necessary",
+      "Clean meal prep containers regularly",
+      "Review what worked well for future meal prep planning",
+    ],
+  },
+] as const;
+
+async function seedWeeklyMealPrepTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Home",
+      slug: "home",
+      description: "Checklist templates for home tasks, maintenance, and routines.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Home",
+        description: "Checklist templates for home tasks, maintenance, and routines.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Weekly Meal Prep",
+      slug: "weekly-meal-prep",
+      description: "Planning and preparation checklist for weekly meal prepping.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Weekly Meal Prep",
+        description: "Planning and preparation checklist for weekly meal prepping.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Weekly Meal Prep Planning Checklist",
+      slug: "weekly-meal-prep-planning-checklist",
+      description: "A structured checklist for planning, shopping, prepping, and managing weekly meals.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Weekly Meal Prep Planning Checklist",
+        description: "A structured checklist for planning, shopping, prepping, and managing weekly meals.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of WEEKLY_MEAL_PREP_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+const FITNESS_COMPETITION_CHECKLIST = [
+  {
+    title: "Competition Planning",
+    items: [
+      "Confirm competition date and location",
+      "Review competition rules and categories",
+      "Complete registration and payment",
+      "Verify qualification requirements if applicable",
+      "Plan travel and accommodation",
+      "Prepare competition timeline and schedule",
+      "Review judging criteria",
+      "Set performance and physique goals",
+      "Inform coach or support team about schedule",
+      "Prepare emergency contact information",
+    ],
+  },
+  {
+    title: "Training Preparation",
+    items: [
+      "Follow structured training program",
+      "Practice competition poses or routines",
+      "Monitor workout intensity and recovery",
+      "Focus on weak muscle groups if needed",
+      "Track progress with photos and measurements",
+      "Schedule rest and recovery days",
+      "Avoid overtraining before competition",
+      "Practice stage presence and transitions",
+      "Review posing or performance choreography",
+      "Prepare final peak-week strategy",
+    ],
+  },
+  {
+    title: "Nutrition and Hydration",
+    items: [
+      "Follow competition meal plan",
+      "Prepare meals and snacks in advance",
+      "Track calorie and macronutrient intake",
+      "Stay hydrated consistently",
+      "Monitor sodium and water manipulation if required",
+      "Avoid unfamiliar foods before competition",
+      "Prepare competition-day meals",
+      "Pack supplements if used",
+      "Bring electrolyte drinks if needed",
+      "Follow coach or nutritionist guidance carefully",
+    ],
+  },
+  {
+    title: "Physical Appearance Preparation",
+    items: [
+      "Schedule haircut or grooming appointment",
+      "Prepare competition tan or tanning products",
+      "Practice posing with competition attire",
+      "Inspect skin condition and hydration",
+      "Prepare shaving or waxing if required",
+      "Pack resistance bands for pump-up",
+      "Prepare makeup and hair products if applicable",
+      "Check nails and personal grooming",
+      "Test stage lighting appearance if possible",
+      "Prepare backup grooming supplies",
+    ],
+  },
+  {
+    title: "Competition Clothing and Gear",
+    items: [
+      "Prepare competition outfit or suit",
+      "Check outfit fit and condition",
+      "Bring backup outfit if possible",
+      "Pack posing trunks or stage wear",
+      "Prepare comfortable warm-up clothing",
+      "Bring flip-flops or comfortable shoes",
+      "Pack towels and hygiene products",
+      "Prepare gym bag and accessories",
+      "Bring resistance bands or light weights for warm-up",
+      "Pack safety pins, clips, or sewing kit for emergencies",
+    ],
+  },
+  {
+    title: "Health and Recovery",
+    items: [
+      "Get adequate sleep before competition",
+      "Monitor stress and recovery levels",
+      "Stretch and mobility work regularly",
+      "Avoid unnecessary physical strain",
+      "Prepare personal medications if needed",
+      "Monitor for signs of fatigue or dehydration",
+      "Schedule massage or recovery sessions if appropriate",
+      "Practice relaxation and mental focus techniques",
+      "Maintain healthy digestion and energy levels",
+    ],
+  },
+  {
+    title: "Technology and Documentation",
+    items: [
+      "Prepare identification documents",
+      "Bring registration confirmation",
+      "Save event schedule and venue information",
+      "Charge phone and electronic devices",
+      "Pack phone charger or power bank",
+      "Bring camera or tripod if desired",
+      "Save coach or team contact information",
+      "Prepare music file if routine requires it",
+      "Back up important digital files",
+    ],
+  },
+  {
+    title: "Before Leaving for the Competition",
+    items: [
+      "Double-check all packed items",
+      "Confirm travel arrangements and timing",
+      "Prepare food and water for travel",
+      "Check weather forecast",
+      "Fuel vehicle if driving",
+      "Ensure all competition documents are packed",
+      "Leave early to avoid delays",
+      "Relax and stay mentally focused",
+      "Review competition schedule one final time",
+      "Confirm communication with coach or team",
+    ],
+  },
+  {
+    title: "At the Competition Venue",
+    items: [
+      "Check in and register upon arrival",
+      "Verify stage schedule and call times",
+      "Inspect backstage area",
+      "Prepare competition attire and tanning setup",
+      "Warm up muscles before stage time",
+      "Practice posing and breathing techniques",
+      "Stay hydrated and energized",
+      "Monitor physical appearance and pump-up timing",
+      "Listen for stage announcements and instructions",
+      "Stay calm and focused before performing",
+    ],
+  },
+  {
+    title: "During the Competition",
+    items: [
+      "Follow stage directions carefully",
+      "Maintain confident posture and presentation",
+      "Control breathing and posing transitions",
+      "Stay aware of judges’ instructions",
+      "Monitor hydration and energy levels",
+      "Support team communication if applicable",
+      "Avoid unnecessary stress or distractions",
+      "Maintain professionalism and sportsmanship",
+      "Focus on performance rather than competitors",
+      "Enjoy the competition experience",
+    ],
+  },
+  {
+    title: "After the Competition",
+    items: [
+      "Cool down and stretch",
+      "Rehydrate and eat recovery food",
+      "Remove tanning products and clean up",
+      "Pack equipment and personal items",
+      "Review feedback and results",
+      "Take progress photos if desired",
+      "Rest and recover properly",
+      "Plan post-competition recovery and training",
+      "Celebrate achievements and lessons learned",
+    ],
+  },
+] as const;
+
+async function seedFitnessCompetitionTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Fitness",
+      slug: "fitness",
+      description: "Checklist templates for gyms, fitness centers, wellness, and exercise facilities.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Fitness",
+        description:
+          "Checklist templates for gyms, fitness centers, wellness, and exercise facilities.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Fitness Competition",
+      slug: "fitness-competition",
+      description: "Preparation and competition-day checklist for fitness competitions.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Fitness Competition",
+        description: "Preparation and competition-day checklist for fitness competitions.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Fitness Competition Preparation Checklist",
+      slug: "fitness-competition-preparation-checklist",
+      description: "Checklist for preparing, competing, and recovering from fitness competitions.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Fitness Competition Preparation Checklist",
+        description: "Checklist for preparing, competing, and recovering from fitness competitions.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of FITNESS_COMPETITION_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+const MOTORCYCLE_TRIP_CHECKLIST = [
+  {
+    title: "Trip Planning",
+    items: [
+      "Choose destination and travel route",
+      "Review road and weather conditions",
+      "Estimate daily riding distance and travel time",
+      "Plan fuel stops and rest breaks",
+      "Book accommodations if needed",
+      "Share itinerary with family or friends",
+      "Identify emergency contact information",
+      "Download offline maps and navigation routes",
+      "Research local traffic laws and restrictions",
+      "Prepare backup route options",
+    ],
+  },
+  {
+    title: "Motorcycle Inspection",
+    items: [
+      "Check engine oil level",
+      "Inspect coolant level if applicable",
+      "Check brake fluid levels",
+      "Inspect tires for wear and damage",
+      "Verify tire pressure",
+      "Check chain or belt condition and tension",
+      "Test front and rear brakes",
+      "Inspect lights and turn signals",
+      "Verify horn functionality",
+      "Check battery condition",
+    ],
+  },
+  {
+    title: "Safety Gear",
+    items: [
+      "Inspect helmet for damage",
+      "Bring riding jacket with protection",
+      "Wear riding gloves",
+      "Prepare riding pants or protective gear",
+      "Wear proper motorcycle boots",
+      "Pack rain gear",
+      "Bring reflective vest if needed",
+      "Carry ear protection for long rides",
+      "Pack sunglasses or tinted visor",
+      "Prepare cold-weather layers if necessary",
+    ],
+  },
+  {
+    title: "Documents and Legal Requirements",
+    items: [
+      "Carry motorcycle license",
+      "Bring registration documents",
+      "Verify insurance coverage",
+      "Pack roadside assistance information",
+      "Prepare identification documents",
+      "Check toll payment methods if needed",
+      "Carry spare key if available",
+      "Save emergency phone numbers",
+    ],
+  },
+  {
+    title: "Navigation and Technology",
+    items: [
+      "Charge phone and GPS devices",
+      "Mount navigation system securely",
+      "Download offline maps",
+      "Pack phone charger or power bank",
+      "Test Bluetooth/intercom systems",
+      "Bring action camera if desired",
+      "Verify communication devices functionality",
+      "Prepare emergency contact information in phone",
+    ],
+  },
+  {
+    title: "Luggage and Packing",
+    items: [
+      "Secure saddlebags or luggage properly",
+      "Pack lightweight and essential items only",
+      "Bring extra clothing and socks",
+      "Pack toiletries and hygiene items",
+      "Carry snacks and drinking water",
+      "Bring basic tool kit",
+      "Pack tire repair kit and air pump",
+      "Carry first aid kit",
+      "Store valuables in waterproof bags",
+      "Balance luggage weight evenly",
+    ],
+  },
+  {
+    title: "Emergency and Maintenance Supplies",
+    items: [
+      "Pack flashlight or headlamp",
+      "Bring spare fuses and bulbs",
+      "Carry jumper cables or battery starter if possible",
+      "Bring multi-tool or repair tools",
+      "Pack emergency blanket",
+      "Carry chain lubricant if needed",
+      "Prepare cleaning cloths and gloves",
+      "Verify roadside emergency kit availability",
+      "Bring zip ties and duct tape for quick fixes",
+    ],
+  },
+  {
+    title: "Before Departure",
+    items: [
+      "Fill fuel tank completely",
+      "Check weather forecast one final time",
+      "Test motorcycle lights and brakes",
+      "Secure all luggage and straps",
+      "Warm up motorcycle engine",
+      "Confirm route and navigation settings",
+      "Inform emergency contact before leaving",
+      "Wear all safety gear properly",
+      "Start trip well-rested and hydrated",
+      "Leave early to maximize daylight riding",
+    ],
+  },
+  {
+    title: "During the Trip",
+    items: [
+      "Monitor fuel levels regularly",
+      "Take regular breaks to avoid fatigue",
+      "Stay hydrated",
+      "Check motorcycle condition during stops",
+      "Monitor tire condition and pressure",
+      "Watch weather and road changes",
+      "Ride within speed limits and conditions",
+      "Maintain safe following distance",
+      "Secure belongings during stops",
+      "Stay alert for road hazards",
+    ],
+  },
+  {
+    title: "After the Trip",
+    items: [
+      "Inspect motorcycle for damage or wear",
+      "Clean motorcycle thoroughly",
+      "Refill fuel if needed",
+      "Recharge electronics and communication devices",
+      "Clean and store riding gear properly",
+      "Lubricate chain if applicable",
+      "Review trip notes and route performance",
+      "Back up photos or ride recordings",
+      "Restock emergency supplies",
+      "Schedule maintenance if required",
+    ],
+  },
+] as const;
+
+async function seedMotorcycleTripTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Travel",
+      slug: "travel",
+      description: "Checklist templates for travel, trips, and transportation.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Travel",
+        description: "Checklist templates for travel, trips, and transportation.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Motorcycle Trip",
+      slug: "motorcycle-trip",
+      description: "Preparation and inspection checklist for motorcycle trips.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Motorcycle Trip",
+        description: "Preparation and inspection checklist for motorcycle trips.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Motorcycle Trip Preparation Checklist",
+      slug: "motorcycle-trip-preparation-checklist",
+      description: "A checklist covering planning, inspection, safety gear, documents, navigation, packing, emergencies, and post-trip tasks for motorcycle journeys.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Motorcycle Trip Preparation Checklist",
+        description: "A checklist covering planning, inspection, safety gear, documents, navigation, packing, emergencies, and post-trip tasks for motorcycle journeys.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of MOTORCYCLE_TRIP_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+const BICYCLE_RACE_CHECKLIST = [
+  {
+    title: "Race Planning",
+    items: [
+      "Confirm race date and start time",
+      "Review race route and elevation profile",
+      "Verify registration and race confirmation",
+      "Check race rules and requirements",
+      "Plan transportation to race location",
+      "Book accommodation if necessary",
+      "Prepare race-day schedule",
+      "Identify parking and arrival procedures",
+      "Review weather forecast",
+      "Inform emergency contact about race plans",
+    ],
+  },
+  {
+    title: "Bicycle Inspection",
+    items: [
+      "Clean bicycle thoroughly",
+      "Inspect frame for cracks or damage",
+      "Check tire pressure",
+      "Inspect tires for wear or punctures",
+      "Verify wheel alignment and spoke tension",
+      "Test brakes and brake pads",
+      "Lubricate chain and drivetrain",
+      "Check gear shifting performance",
+      "Tighten bolts and quick releases",
+      "Test pedals and cleats",
+    ],
+  },
+  {
+    title: "Safety Equipment",
+    items: [
+      "Inspect helmet for damage",
+      "Prepare cycling gloves",
+      "Bring cycling sunglasses",
+      "Wear reflective gear if needed",
+      "Pack front and rear lights if required",
+      "Carry identification and medical information",
+      "Prepare first aid supplies for travel",
+      "Bring sunscreen and lip balm",
+    ],
+  },
+  {
+    title: "Clothing and Personal Gear",
+    items: [
+      "Prepare cycling jersey and shorts",
+      "Pack weather-appropriate layers",
+      "Bring cycling shoes",
+      "Pack extra socks",
+      "Prepare rain jacket if needed",
+      "Bring warm-up clothing",
+      "Pack towel and hygiene supplies",
+      "Carry post-race change of clothes",
+      "Prepare race bib attachment pins or belt",
+    ],
+  },
+  {
+    title: "Nutrition and Hydration",
+    items: [
+      "Plan pre-race meals",
+      "Prepare energy gels or bars",
+      "Fill water bottles",
+      "Pack electrolyte drinks",
+      "Test race nutrition strategy in advance",
+      "Avoid unfamiliar foods before race",
+      "Prepare recovery snacks for after the race",
+      "Stay hydrated before race day",
+    ],
+  },
+  {
+    title: "Technology and Electronics",
+    items: [
+      "Charge cycling computer or GPS device",
+      "Test heart rate monitor or sensors",
+      "Charge lights and electronic accessories",
+      "Download race route to navigation device",
+      "Prepare phone charger or power bank",
+      "Verify timing chip if applicable",
+      "Test wireless shifting systems if used",
+      "Back up training and route data if needed",
+    ],
+  },
+  {
+    title: "Training and Physical Preparation",
+    items: [
+      "Follow taper or recovery plan before race",
+      "Get adequate sleep before race day",
+      "Stretch and warm up properly",
+      "Avoid overtraining close to race day",
+      "Stay hydrated during final training days",
+      "Review pacing strategy",
+      "Practice race starts and transitions if needed",
+      "Monitor physical condition and injuries",
+    ],
+  },
+  {
+    title: "Before Leaving for the Race",
+    items: [
+      "Double-check all gear and equipment",
+      "Secure bicycle for transport",
+      "Prepare race documents and ID",
+      "Confirm race start location and time",
+      "Check weather conditions again",
+      "Fuel vehicle if driving",
+      "Arrive with enough time before start",
+      "Pack emergency repair kit and pump",
+      "Bring spare tubes or tire repair supplies",
+      "Ensure all electronics are charged",
+    ],
+  },
+  {
+    title: "At the Race Venue",
+    items: [
+      "Register or check in if required",
+      "Pick up race packet and bib",
+      "Attach race number properly",
+      "Inspect bicycle one final time",
+      "Warm up before the race",
+      "Test brakes and gears briefly",
+      "Use restroom before start",
+      "Hydrate and eat light pre-race snack",
+      "Review race strategy and pacing",
+      "Move to starting area on time",
+    ],
+  },
+  {
+    title: "During the Race",
+    items: [
+      "Pace effort appropriately",
+      "Stay hydrated and fueled",
+      "Monitor surroundings and competitors",
+      "Follow race rules and course markings",
+      "Ride safely in groups or pelotons",
+      "Watch for hazards on the road/trail",
+      "Maintain focus and energy management",
+      "Communicate clearly with nearby riders",
+      "Monitor bike performance during race",
+      "Finish safely and strongly",
+    ],
+  },
+  {
+    title: "After the Race",
+    items: [
+      "Cool down and stretch",
+      "Rehydrate and eat recovery food",
+      "Inspect bicycle for damage",
+      "Clean and store equipment",
+      "Review race performance and results",
+      "Recharge electronic devices",
+      "Back up race data and photos",
+      "Treat any injuries or soreness",
+      "Rest and recover properly",
+      "Plan improvements for future races",
+    ],
+  },
+] as const;
+
+async function seedBicycleRaceTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Cycling",
+      slug: "cycling",
+      description: "Checklist templates for cycling events, training, and rides.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Cycling",
+        description: "Checklist templates for cycling events, training, and rides.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Bicycle Race",
+      slug: "bicycle-race",
+      description: "Preparation and race-day checklist for bicycle races.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Bicycle Race",
+        description: "Preparation and race-day checklist for bicycle races.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Bicycle Race Preparation Checklist",
+      slug: "bicycle-race-preparation-checklist",
+      description: "Comprehensive checklist for preparing, racing, and recovering from bicycle races.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Bicycle Race Preparation Checklist",
+        description: "Comprehensive checklist for preparing, racing, and recovering from bicycle races.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of BICYCLE_RACE_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+
 async function seedScubaDivingTemplate() {
   const admin = await findOrCreateSystemAdmin();
 
@@ -4530,6 +8237,98 @@ async function seedScubaDivingTemplate() {
     .returning();
 
   for (const [sectionIndex, sectionData] of SCUBA_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+async function seedGymOpeningClosingTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Fitness",
+      slug: "fitness",
+      description: "Checklist templates for gyms, fitness centers, wellness, and exercise facilities.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Fitness",
+        description:
+          "Checklist templates for gyms, fitness centers, wellness, and exercise facilities.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Gym Operations",
+      slug: "gym-operations",
+      description:
+        "Opening and closing procedures, facility checks, equipment setup, safety, cleaning, and administrative tasks for gyms and fitness centers.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Gym Operations",
+        description:
+          "Opening and closing procedures, facility checks, equipment setup, safety, cleaning, and administrative tasks for gyms and fitness centers.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Gym Opening / Closing Checklist",
+      slug: "gym-opening-closing-checklist",
+      description:
+        "A gym opening and closing checklist covering staff preparation, facility inspection, equipment checks, reception setup, safety, member opening and closing procedures, cleaning, maintenance, administration, and final walkthroughs.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Gym Opening / Closing Checklist",
+        description:
+          "A gym opening and closing checklist covering staff preparation, facility inspection, equipment checks, reception setup, safety, member opening and closing procedures, cleaning, maintenance, administration, and final walkthroughs.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of GYM_OPENING_CLOSING_CHECKLIST.entries()) {
     const [section] = await db
       .insert(templateSections)
       .values({
@@ -4797,6 +8596,96 @@ async function seedCampingHikingTemplate() {
     .returning();
 
   for (const [sectionIndex, sectionData] of CAMPING_HIKING_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+async function seedHikingSafetyTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Outdoor Recreation",
+      slug: "outdoor-recreation",
+      description: "Checklist templates for camping, hiking, and outdoor safety routines.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Outdoor Recreation",
+        description: "Checklist templates for camping, hiking, and outdoor safety routines.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Hiking Safety",
+      slug: "hiking-safety",
+      description: "Trail planning, clothing, navigation, supplies, safety equipment, and hike wrap-up.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Hiking Safety",
+        description:
+          "Trail planning, clothing, navigation, supplies, safety equipment, and hike wrap-up.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Hiking Safety Checklist",
+      slug: "hiking-safety-checklist",
+      description:
+        "A hiking safety checklist covering trip planning, clothing, navigation, food and water, emergency equipment, trail safety, readiness, gear checks, departure, the hike, and post-hike tasks.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Hiking Safety Checklist",
+        description:
+          "A hiking safety checklist covering trip planning, clothing, navigation, food and water, emergency equipment, trail safety, readiness, gear checks, departure, the hike, and post-hike tasks.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of HIKING_SAFETY_CHECKLIST.entries()) {
     const [section] = await db
       .insert(templateSections)
       .values({
@@ -5265,6 +9154,370 @@ async function seedWeddingEventTemplate() {
   return template;
 }
 
+async function seedChildrensPartyTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Events",
+      slug: "events",
+      description: "Checklist templates for planning, coordinating, and running events.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Events",
+        description: "Checklist templates for planning, coordinating, and running events.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Children's Party",
+      slug: "childrens-party",
+      description:
+        "Children's party planning, venue setup, food, decorations, activities, safety, gifts, and cleanup.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Children's Party",
+        description:
+          "Children's party planning, venue setup, food, decorations, activities, safety, gifts, and cleanup.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Checklist for Organizing a Children's Party",
+      slug: "checklist-for-organizing-a-childrens-party",
+      description:
+        "A children's party checklist covering planning, venue preparation, food and drinks, decorations, entertainment, safety, gifts, before guests arrive, during the party, and after-party cleanup.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Checklist for Organizing a Children's Party",
+        description:
+          "A children's party checklist covering planning, venue preparation, food and drinks, decorations, entertainment, safety, gifts, before guests arrive, during the party, and after-party cleanup.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of CHILDRENS_PARTY_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+async function seedMusicalPerformanceTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Events",
+      slug: "events",
+      description: "Checklist templates for planning, coordinating, and running events.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Events",
+        description: "Checklist templates for planning, coordinating, and running events.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Musical Performance",
+      slug: "musical-performance",
+      description:
+        "Musical performance planning, equipment setup, technical checks, stage readiness, performer preparation, and post-show wrap-up.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Musical Performance",
+        description:
+          "Musical performance planning, equipment setup, technical checks, stage readiness, performer preparation, and post-show wrap-up.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Checklist for a Musical Performance or Concert",
+      slug: "checklist-for-a-musical-performance-or-concert",
+      description:
+        "A musical performance checklist covering planning, equipment, technical setup, materials, personal preparation, team communication, stage readiness, performance flow, and post-show wrap-up.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Checklist for a Musical Performance or Concert",
+        description:
+          "A musical performance checklist covering planning, equipment, technical setup, materials, personal preparation, team communication, stage readiness, performance flow, and post-show wrap-up.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of MUSICAL_PERFORMANCE_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+async function seedPodcastRecordingTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Photography and Media",
+      slug: "photography-and-media",
+      description: "Checklist templates for photography, video, and creative production work.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Photography and Media",
+        description: "Checklist templates for photography, video, and creative production work.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Podcast Recording",
+      slug: "podcast-recording",
+      description:
+        "Podcast episode planning, room setup, audio equipment, remote guest prep, recording workflow, and post-production wrap-up.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Podcast Recording",
+        description:
+          "Podcast episode planning, room setup, audio equipment, remote guest prep, recording workflow, and post-production wrap-up.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Podcast Recording Setup Checklist",
+      slug: "podcast-recording-setup-checklist",
+      description:
+        "A podcast recording checklist covering episode planning, room setup, audio equipment, software, remote guests, branding, recording, and after-recording tasks.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Podcast Recording Setup Checklist",
+        description:
+          "A podcast recording checklist covering episode planning, room setup, audio equipment, software, remote guests, branding, recording, and after-recording tasks.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of PODCAST_RECORDING_SETUP_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+async function seedPhotographyDroneMissionTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Photography and Media",
+      slug: "photography-and-media",
+      description: "Checklist templates for photography, video, and creative production work.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Photography and Media",
+        description: "Checklist templates for photography, video, and creative production work.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Photography Drone Mission",
+      slug: "photography-drone-mission",
+      description:
+        "Drone photography mission planning, aircraft inspection, camera setup, environment checks, safety prep, flight execution, and post-flight wrap-up.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Photography Drone Mission",
+        description:
+          "Drone photography mission planning, aircraft inspection, camera setup, environment checks, safety prep, flight execution, and post-flight wrap-up.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Photography Drone Mission Checklist",
+      slug: "photography-drone-mission-checklist",
+      description:
+        "A drone photography checklist covering mission planning, drone inspection, battery management, camera setup, environment assessment, communication, safety, takeoff, mission execution, and landing wrap-up.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Photography Drone Mission Checklist",
+        description:
+          "A drone photography checklist covering mission planning, drone inspection, battery management, camera setup, environment assessment, communication, safety, takeoff, mission execution, and landing wrap-up.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of PHOTOGRAPHY_DRONE_MISSION_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
 async function seedBusinessConferenceTemplate() {
   const admin = await findOrCreateSystemAdmin();
 
@@ -5696,6 +9949,188 @@ async function seedMovingNewHomeTemplate() {
     .returning();
 
   for (const [sectionIndex, sectionData] of MOVING_NEW_HOME_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+async function seedSpringCleaningHomeTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Home and Moving",
+      slug: "home-and-moving",
+      description: "Checklist templates for moving, home setup, and household routines.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Home and Moving",
+        description: "Checklist templates for moving, home setup, and household routines.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Spring Cleaning and Maintenance at Home",
+      slug: "spring-cleaning-and-maintenance-at-home",
+      description:
+        "Room-by-room spring cleaning, decluttering, maintenance, safety, and home organization checks.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Spring Cleaning and Maintenance at Home",
+        description:
+          "Room-by-room spring cleaning, decluttering, maintenance, safety, and home organization checks.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Spring Cleaning and Maintenance at Home Checklist",
+      slug: "spring-cleaning-and-maintenance-at-home-checklist",
+      description:
+        "A spring cleaning checklist for the home covering planning, decluttering, living areas, kitchen, bathroom, bedrooms, laundry areas, outdoor maintenance, safety, and final organization.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Spring Cleaning and Maintenance at Home Checklist",
+        description:
+          "A spring cleaning checklist for the home covering planning, decluttering, living areas, kitchen, bathroom, bedrooms, laundry areas, outdoor maintenance, safety, and final organization.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of SPRING_CLEANING_HOME_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+async function seedWinterHomePreparationTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Home and Moving",
+      slug: "home-and-moving",
+      description: "Checklist templates for moving, home setup, and household routines.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Home and Moving",
+        description: "Checklist templates for moving, home setup, and household routines.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Winter Home Preparation",
+      slug: "winter-home-preparation",
+      description:
+        "Winterization, heating, plumbing, safety, exterior maintenance, and seasonal preparation for homes and vacation properties.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Winter Home Preparation",
+        description:
+          "Winterization, heating, plumbing, safety, exterior maintenance, and seasonal preparation for homes and vacation properties.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Preparing a House or Vacation Home for Winter Checklist",
+      slug: "preparing-a-house-or-vacation-home-for-winter-checklist",
+      description:
+        "A winter home preparation checklist covering planning, heating, plumbing, exterior maintenance, windows and doors, electrical and safety systems, interior prep, vacation-home steps, emergency preparedness, and seasonal monitoring.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Preparing a House or Vacation Home for Winter Checklist",
+        description:
+          "A winter home preparation checklist covering planning, heating, plumbing, exterior maintenance, windows and doors, electrical and safety systems, interior prep, vacation-home steps, emergency preparedness, and seasonal monitoring.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of WINTER_HOME_PREPARATION_CHECKLIST.entries()) {
     const [section] = await db
       .insert(templateSections)
       .values({
@@ -7003,6 +11438,190 @@ async function seedQASoftwareTestingTemplate() {
   return template;
 }
 
+async function seedDailyOpeningRestaurantTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Food Service",
+      slug: "food-service",
+      description: "Checklist templates for restaurants, cafés, kitchens, and hospitality operations.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Food Service",
+        description:
+          "Checklist templates for restaurants, cafés, kitchens, and hospitality operations.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Restaurant Opening",
+      slug: "restaurant-opening",
+      description:
+        "Opening, setup, safety, inventory, and service-readiness checks for restaurants and cafés.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Restaurant Opening",
+        description:
+          "Opening, setup, safety, inventory, and service-readiness checks for restaurants and cafés.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Daily Opening Checklist for a Restaurant / Café",
+      slug: "daily-opening-checklist-for-a-restaurant-cafe",
+      description:
+        "A daily opening checklist for restaurants and cafés covering staff prep, exterior checks, dining area setup, kitchen prep, beverages, POS systems, safety, inventory, opening walkthrough, service readiness, and post-opening review.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Daily Opening Checklist for a Restaurant / Café",
+        description:
+          "A daily opening checklist for restaurants and cafés covering staff prep, exterior checks, dining area setup, kitchen prep, beverages, POS systems, safety, inventory, opening walkthrough, service readiness, and post-opening review.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of DAILY_OPENING_RESTAURANT_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
+async function seedClosingStoreTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Retail Operations",
+      slug: "retail-operations",
+      description: "Checklist templates for store operations, retail closing, and customer-facing businesses.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Retail Operations",
+        description:
+          "Checklist templates for store operations, retail closing, and customer-facing businesses.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Store Closing",
+      slug: "store-closing",
+      description:
+        "Closing procedures, cash handling, cleaning, inventory, shutdown, safety, staff responsibilities, and final walkthrough checks.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Store Closing",
+        description:
+          "Closing procedures, cash handling, cleaning, inventory, shutdown, safety, staff responsibilities, and final walkthrough checks.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Closing Checklist for a Store or Establishment",
+      slug: "closing-checklist-for-a-store-or-establishment",
+      description:
+        "A store closing checklist covering customer service, cash handling, cleaning, inventory, technology shutdown, safety, staff responsibilities, exterior inspection, and the final walkthrough.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Closing Checklist for a Store or Establishment",
+        description:
+          "A store closing checklist covering customer service, cash handling, cleaning, inventory, technology shutdown, safety, staff responsibilities, exterior inspection, and the final walkthrough.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of CLOSING_STORE_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
+
 async function seedFishingTripTemplate() {
   const admin = await findOrCreateSystemAdmin();
 
@@ -7244,12 +11863,296 @@ async function main() {
     console.log(`Seeded template: ${template.title}`);
   }
 
+  const existingHikingSafetyTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "hiking-safety-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingHikingSafetyTemplate && existingHikingSafetyTemplate.sections.length > 0) {
+    console.log("Hiking safety checklist seed already exists.");
+  } else {
+    const template = await seedHikingSafetyTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
   const existingTentCampingTemplate = await db.query.checklistTemplates.findFirst({
     where: eq(checklistTemplates.slug, "organizing-a-camping-trip-with-a-tent-checklist"),
     with: {
       sections: true,
     },
   });
+
+const STARTUP_LAUNCH_CHECKLIST = [
+  {
+    title: "Business Planning",
+    items: [
+      "Define startup mission and vision",
+      "Identify target audience and customer segments",
+      "Validate business idea and market demand",
+      "Research competitors and industry trends",
+      "Define unique value proposition",
+      "Create business model and revenue strategy",
+      "Prepare business plan and financial projections",
+      "Set short-term and long-term goals",
+      "Identify key performance indicators (KPIs)",
+      "Prepare risk management and contingency plans",
+    ],
+  },
+  {
+    title: "Legal and Administrative Setup",
+    items: [
+      "Register business entity",
+      "Obtain required licenses and permits",
+      "Register business name and trademarks if needed",
+      "Open business bank account",
+      "Set up accounting and bookkeeping systems",
+      "Prepare contracts and legal documents",
+      "Review tax obligations and requirements",
+      "Obtain business insurance",
+      "Draft privacy policy and terms of service",
+      "Ensure compliance with local regulations",
+    ],
+  },
+  {
+    title: "Financial Preparation",
+    items: [
+      "Define startup budget",
+      "Secure funding or investment if needed",
+      "Prepare cash flow projections",
+      "Set pricing strategy",
+      "Establish payment processing systems",
+      "Create expense tracking process",
+      "Prepare financial reporting procedures",
+      "Set up payroll system if hiring employees",
+      "Build emergency financial reserve",
+      "Review financial risks and runway",
+    ],
+  },
+  {
+    title: "Product or Service Preparation",
+    items: [
+      "Finalize product or service offering",
+      "Complete MVP or product development",
+      "Conduct product testing and QA",
+      "Gather user feedback before launch",
+      "Fix critical bugs or issues",
+      "Prepare onboarding or user documentation",
+      "Define customer support process",
+      "Set up analytics and tracking tools",
+      "Verify scalability and infrastructure readiness",
+      "Create backup and recovery plans",
+    ],
+  },
+  {
+    title: "Branding and Marketing",
+    items: [
+      "Finalize company name and branding",
+      "Design logo and visual identity",
+      "Build company website or landing page",
+      "Create social media accounts",
+      "Prepare marketing content and assets",
+      "Develop launch marketing strategy",
+      "Create email marketing setup",
+      "Prepare press kit and media materials",
+      "Build customer acquisition funnel",
+      "Plan promotional campaigns and launch announcements",
+    ],
+  },
+  {
+    title: "Sales and Customer Support",
+    items: [
+      "Define sales process and workflow",
+      "Prepare pricing pages and offers",
+      "Set up CRM or customer management tools",
+      "Create customer support channels",
+      "Prepare FAQ and help documentation",
+      "Define refund and cancellation policies",
+      "Train support or sales team if applicable",
+      "Prepare onboarding flow for customers",
+      "Set response time and support expectations",
+      "Test customer communication systems",
+    ],
+  },
+  {
+    title: "Team and Operations",
+    items: [
+      "Define team roles and responsibilities",
+      "Hire or onboard key team members",
+      "Set up internal communication tools",
+      "Create project management workflows",
+      "Establish company processes and policies",
+      "Prepare onboarding materials for employees",
+      "Schedule regular team meetings",
+      "Define reporting and accountability systems",
+      "Review remote or office work setup",
+      "Build company culture guidelines",
+    ],
+  },
+  {
+    title: "Technology and Infrastructure",
+    items: [
+      "Set up hosting and domain configuration",
+      "Verify website and application performance",
+      "Configure databases and backups",
+      "Set up monitoring and alert systems",
+      "Test APIs and integrations",
+      "Verify security and access controls",
+      "Configure analytics and tracking tools",
+      "Prepare deployment and rollback procedures",
+      "Ensure SSL certificates and HTTPS are active",
+      "Test mobile responsiveness and compatibility",
+    ],
+  },
+  {
+    title: "Security and Compliance",
+    items: [
+      "Implement cybersecurity best practices",
+      "Verify user authentication systems",
+      "Protect customer and business data",
+      "Configure backups and disaster recovery",
+      "Test vulnerability and security measures",
+      "Review GDPR/privacy compliance if applicable",
+      "Ensure secure payment processing",
+      "Verify access permissions and roles",
+      "Monitor for suspicious activity",
+      "Prepare incident response procedures",
+    ],
+  },
+  {
+    title: "Launch Readiness",
+    items: [
+      "Conduct final product testing",
+      "Review all website pages and links",
+      "Verify payment systems work correctly",
+      "Test signup and onboarding flow",
+      "Confirm customer support readiness",
+      "Prepare launch-day communication plan",
+      "Review analytics dashboards",
+      "Conduct team launch rehearsal if needed",
+      "Ensure servers and systems can handle traffic",
+      "Approve final launch checklist",
+    ],
+  },
+  {
+    title: "Launch Day",
+    items: [
+      "Announce launch publicly",
+      "Monitor website and application performance",
+      "Respond to customer questions quickly",
+      "Monitor marketing campaign performance",
+      "Track signups, sales, and traffic",
+      "Watch for technical issues or downtime",
+      "Coordinate team communication actively",
+      "Gather early customer feedback",
+      "Record launch-day metrics and observations",
+      "Celebrate successful launch with team",
+    ],
+  },
+  {
+    title: "Post-Launch Activities",
+    items: [
+      "Monitor user behavior and analytics",
+      "Collect customer feedback and reviews",
+      "Fix bugs and optimize performance",
+      "Continue marketing and growth campaigns",
+      "Analyze sales and conversion metrics",
+      "Review financial performance",
+      "Improve onboarding and retention flows",
+      "Plan future features or improvements",
+      "Conduct post-launch review meeting",
+      "Update roadmap and business goals",
+    ],
+  },
+] as const;
+
+async function seedStartupLaunchTemplate() {
+  const admin = await findOrCreateSystemAdmin();
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      name: "Business",
+      slug: "business",
+      description: "Checklist templates for business planning and startup launches.",
+    })
+    .onConflictDoUpdate({
+      target: categories.slug,
+      set: {
+        name: "Business",
+        description: "Checklist templates for business planning and startup launches.",
+      },
+    })
+    .returning();
+
+  const [activity] = await db
+    .insert(activities)
+    .values({
+      categoryId: category.id,
+      name: "Startup Launch",
+      slug: "startup-launch",
+      description: "Checklist for launching a startup or new business.",
+    })
+    .onConflictDoUpdate({
+      target: activities.slug,
+      set: {
+        categoryId: category.id,
+        name: "Startup Launch",
+        description: "Checklist for launching a startup or new business.",
+      },
+    })
+    .returning();
+
+  const [template] = await db
+    .insert(checklistTemplates)
+    .values({
+      categoryId: category.id,
+      activityId: activity.id,
+      title: "Startup Launch Checklist",
+      slug: "startup-launch-checklist",
+      description: "Comprehensive checklist to prepare for a startup launch.",
+      status: "published",
+      versionNumber: 1,
+      createdByUserId: admin.id,
+      updatedByUserId: admin.id,
+    })
+    .onConflictDoUpdate({
+      target: checklistTemplates.slug,
+      set: {
+        categoryId: category.id,
+        activityId: activity.id,
+        title: "Startup Launch Checklist",
+        description: "Comprehensive checklist to prepare for a startup launch.",
+        status: "published",
+        versionNumber: 1,
+        updatedByUserId: admin.id,
+      },
+    })
+    .returning();
+
+  for (const [sectionIndex, sectionData] of STARTUP_LAUNCH_CHECKLIST.entries()) {
+    const [section] = await db
+      .insert(templateSections)
+      .values({
+        templateId: template.id,
+        title: sectionData.title,
+        sortOrder: sectionIndex,
+      })
+      .returning();
+
+    await db.insert(templateItems).values(
+      sectionData.items.map((text, itemIndex) => ({
+        sectionId: section.id,
+        text,
+        isRequired: false,
+        sortOrder: itemIndex,
+      })),
+    );
+  }
+
+  return template;
+}
 
   if (existingTentCampingTemplate && existingTentCampingTemplate.sections.length > 0) {
     console.log("Tent camping trip checklist seed already exists.");
@@ -7269,6 +12172,118 @@ async function main() {
     console.log("Road trip preparation checklist seed already exists.");
   } else {
     const template = await seedRoadTripTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingMotorcycleTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "motorcycle-trip-preparation-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingMotorcycleTemplate && existingMotorcycleTemplate.sections.length > 0) {
+    console.log("Motorcycle trip preparation checklist seed already exists.");
+  } else {
+    const template = await seedMotorcycleTripTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingBicycleRaceTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "bicycle-race-preparation-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingBicycleRaceTemplate && existingBicycleRaceTemplate.sections.length > 0) {
+    console.log("Bicycle race preparation checklist seed already exists.");
+  } else {
+    const template = await seedBicycleRaceTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingFitnessCompetitionTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "fitness-competition-preparation-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingFitnessCompetitionTemplate && existingFitnessCompetitionTemplate.sections.length > 0) {
+    console.log("Fitness competition preparation checklist seed already exists.");
+  } else {
+    const template = await seedFitnessCompetitionTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingWeeklyMealPrepTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "weekly-meal-prep-planning-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingWeeklyMealPrepTemplate && existingWeeklyMealPrepTemplate.sections.length > 0) {
+    console.log("Weekly meal prep planning checklist seed already exists.");
+  } else {
+    const template = await seedWeeklyMealPrepTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingHomeRenovationTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "home-renovation-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingHomeRenovationTemplate && existingHomeRenovationTemplate.sections.length > 0) {
+    console.log("Home renovation checklist seed already exists.");
+  } else {
+    const template = await seedHomeRenovationTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingCybersecurityTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "cybersecurity-audit-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingCybersecurityTemplate && existingCybersecurityTemplate.sections.length > 0) {
+    console.log("Cybersecurity audit checklist seed already exists.");
+  } else {
+    const template = await seedCybersecurityAuditTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingServerMaintenanceTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "server-maintenance-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingServerMaintenanceTemplate && existingServerMaintenanceTemplate.sections.length > 0) {
+    console.log("Server maintenance checklist seed already exists.");
+  } else {
+    const template = await seedServerMaintenanceTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingBackupVerificationTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "data-backup-verification-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingBackupVerificationTemplate && existingBackupVerificationTemplate.sections.length > 0) {
+    console.log("Data backup verification checklist seed already exists.");
+  } else {
+    const template = await seedDataBackupVerificationTemplate();
     console.log(`Seeded template: ${template.title}`);
   }
 
@@ -7311,6 +12326,65 @@ async function main() {
     console.log("Wedding event preparation checklist seed already exists.");
   } else {
     const template = await seedWeddingEventTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingChildrensPartyTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "checklist-for-organizing-a-childrens-party"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingChildrensPartyTemplate && existingChildrensPartyTemplate.sections.length > 0) {
+    console.log("Children's party checklist seed already exists.");
+  } else {
+    const template = await seedChildrensPartyTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingMusicalPerformanceTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "checklist-for-a-musical-performance-or-concert"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingMusicalPerformanceTemplate && existingMusicalPerformanceTemplate.sections.length > 0) {
+    console.log("Musical performance checklist seed already exists.");
+  } else {
+    const template = await seedMusicalPerformanceTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingPodcastRecordingTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "podcast-recording-setup-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingPodcastRecordingTemplate && existingPodcastRecordingTemplate.sections.length > 0) {
+    console.log("Podcast recording setup checklist seed already exists.");
+  } else {
+    const template = await seedPodcastRecordingTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingPhotographyDroneMissionTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "photography-drone-mission-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (
+    existingPhotographyDroneMissionTemplate &&
+    existingPhotographyDroneMissionTemplate.sections.length > 0
+  ) {
+    console.log("Photography drone mission checklist seed already exists.");
+  } else {
+    const template = await seedPhotographyDroneMissionTemplate();
     console.log(`Seeded template: ${template.title}`);
   }
 
@@ -7373,6 +12447,20 @@ async function main() {
     console.log(`Seeded template: ${template.title}`);
   }
 
+  const existingStartupLaunchTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "startup-launch-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingStartupLaunchTemplate && existingStartupLaunchTemplate.sections.length > 0) {
+    console.log("Startup launch checklist seed already exists.");
+  } else {
+    const template = await seedStartupLaunchTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
   const existingMovingNewHomeTemplate = await db.query.checklistTemplates.findFirst({
     where: eq(checklistTemplates.slug, "moving-into-a-new-home-checklist"),
     with: {
@@ -7384,6 +12472,51 @@ async function main() {
     console.log("Moving into a new home checklist seed already exists.");
   } else {
     const template = await seedMovingNewHomeTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingSpringCleaningHomeTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "spring-cleaning-and-maintenance-at-home-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (
+    existingSpringCleaningHomeTemplate &&
+    existingSpringCleaningHomeTemplate.sections.length > 0
+  ) {
+    console.log("Spring cleaning and maintenance at home checklist seed already exists.");
+  } else {
+    const template = await seedSpringCleaningHomeTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingFirstAidTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "first-aid-kit-inspection-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingFirstAidTemplate && existingFirstAidTemplate.sections.length > 0) {
+    console.log("First aid kit inspection checklist seed already exists.");
+  } else {
+    const template = await seedFirstAidKitTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingWinterHomeTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "preparing-a-house-or-vacation-home-for-winter-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingWinterHomeTemplate && existingWinterHomeTemplate.sections.length > 0) {
+    console.log("Winter home preparation checklist seed already exists.");
+  } else {
+    const template = await seedWinterHomePreparationTemplate();
     console.log(`Seeded template: ${template.title}`);
   }
 
@@ -7603,6 +12736,48 @@ async function main() {
     console.log("QA / software testing checklist seed already exists.");
   } else {
     const template = await seedQASoftwareTestingTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingRestaurantTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "daily-opening-checklist-for-a-restaurant-cafe"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingRestaurantTemplate && existingRestaurantTemplate.sections.length > 0) {
+    console.log("Daily opening checklist for a restaurant / café seed already exists.");
+  } else {
+    const template = await seedDailyOpeningRestaurantTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingClosingStoreTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "closing-checklist-for-a-store-or-establishment"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingClosingStoreTemplate && existingClosingStoreTemplate.sections.length > 0) {
+    console.log("Closing checklist for a store or establishment seed already exists.");
+  } else {
+    const template = await seedClosingStoreTemplate();
+    console.log(`Seeded template: ${template.title}`);
+  }
+
+  const existingGymTemplate = await db.query.checklistTemplates.findFirst({
+    where: eq(checklistTemplates.slug, "gym-opening-closing-checklist"),
+    with: {
+      sections: true,
+    },
+  });
+
+  if (existingGymTemplate && existingGymTemplate.sections.length > 0) {
+    console.log("Gym opening / closing checklist seed already exists.");
+  } else {
+    const template = await seedGymOpeningClosingTemplate();
     console.log(`Seeded template: ${template.title}`);
   }
 
