@@ -250,6 +250,7 @@ import {
   templateItems,
   templateSections,
   users,
+  suggestions,
 } from "./schema";
 
 const SCUBA_CHECKLIST = [
@@ -6990,6 +6991,85 @@ async function seedSampleUsers() {
   }
 }
 
+async function seedSampleSuggestions() {
+  // Insert up to 5 sample suggestions from different sample users targeting existing templates.
+  const sampleMap = [
+    {
+      userEmail: "steve@gmail.com",
+      templateSlug: "startup-launch-checklist",
+      type: "template_edit",
+      title: "Add investor pitch checklist",
+      description:
+        "Add a short investor pitch checklist section covering slide deck, key metrics, and financial projections to help founders prepare for meetings.",
+    },
+    {
+      userEmail: "peter@gmail.com",
+      templateSlug: "scuba-diving-preparation-checklist",
+      type: "template_edit",
+      title: "Add equipment rental & return items",
+      description:
+        "Include items and reminders specific to rented gear, rental agreements, and return condition checks.",
+    },
+    {
+      userEmail: "dave@gmail.com",
+      templateSlug: "home-renovation-checklist",
+      type: "template_variant",
+      title: "Budget-friendly variant",
+      description:
+        "Create a budget-friendly variant that focuses on DIY options, lower-cost materials, and prioritised tasks to save costs.",
+    },
+    {
+      userEmail: "john@gmail.com",
+      templateSlug: "data-backup-verification-checklist",
+      type: "template_edit",
+      title: "Cloud provider restore steps",
+      description:
+        "Add cloud-provider specific restore verification steps (IAM roles, console restore steps, region checks) for common providers.",
+    },
+    {
+      userEmail: "nick@gmail.com",
+      templateSlug: "server-maintenance-checklist",
+      type: "template_edit",
+      title: "Container orchestration checks",
+      description:
+        "Add a section for container orchestration (Kubernetes) including pod health, deployment rollouts, and ingress checks.",
+    },
+  ];
+
+  const inserts: any[] = [];
+
+  for (const item of sampleMap) {
+    const user = await db.query.users.findFirst({ where: eq(users.email, item.userEmail) });
+    const template = await db.query.checklistTemplates.findFirst({ where: eq(checklistTemplates.slug, item.templateSlug) });
+
+    if (!user) {
+      console.log(`Skipping suggestion: user ${item.userEmail} not found.`);
+      continue;
+    }
+
+    if (!template) {
+      console.log(`Skipping suggestion: template ${item.templateSlug} not found.`);
+      continue;
+    }
+
+    inserts.push({
+      userId: user.id,
+      targetTemplateId: template.id,
+      type: item.type,
+      title: item.title,
+      description: item.description,
+    });
+  }
+
+  if (inserts.length === 0) {
+    return;
+  }
+
+  await db.insert(suggestions).values(inserts).onConflictDoNothing();
+
+  console.log(`Seeded ${inserts.length} sample suggestions.`);
+}
+
 const FIRST_AID_KIT_CHECKLIST = [
   {
     title: "Inspection Preparation",
@@ -12794,6 +12874,8 @@ async function seedStartupLaunchTemplate() {
     const template = await seedHuntingTripTemplate();
     console.log(`Seeded template: ${template.title}`);
   }
+
+  await seedSampleSuggestions();
 }
 
 main().catch((error) => {
