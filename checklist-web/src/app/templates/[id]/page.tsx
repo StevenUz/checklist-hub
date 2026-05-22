@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { startChecklistAction } from "@/actions/checklistActions";
+import { getCurrentUser } from "@/lib/auth";
 import { getTemplateDetails } from "@/services/templateService";
 
 type TemplateDetailsPageProps = {
@@ -11,6 +12,7 @@ type TemplateDetailsPageProps = {
 };
 
 export default async function TemplateDetailsPage({ params }: TemplateDetailsPageProps) {
+  const user = await getCurrentUser();
   const resolvedParams = await params;
   const templateId = Number(resolvedParams.id);
 
@@ -47,15 +49,26 @@ export default async function TemplateDetailsPage({ params }: TemplateDetailsPag
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{template.title}</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">{template.description}</p>
 
-        <form action={startChecklistAction} className="mt-6">
-          <input type="hidden" name="templateId" value={template.id} />
-          <button
-            type="submit"
-            className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-          >
-            Start Checklist
-          </button>
-        </form>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <form action={startChecklistAction}>
+            <input type="hidden" name="templateId" value={template.id} />
+            <button
+              type="submit"
+              className="inline-flex h-11 items-center justify-center rounded-md bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            >
+              Start Checklist
+            </button>
+          </form>
+
+          {user?.role === "admin" ? (
+            <Link
+              href={`/admin/templates/${template.id}/edit`}
+              className="inline-flex h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+            >
+              Edit
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-8 space-y-5">
