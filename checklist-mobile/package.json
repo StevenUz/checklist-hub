@@ -3,14 +3,14 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "dev": "..\\node_modules\\.bin\\expo.cmd start",
-    "start": "..\\node_modules\\.bin\\expo.cmd start",
-    "build": "set EXPO_ROUTER_APP_ROOT=src/app&& ..\\node_modules\\.bin\\expo.cmd export --platform web",
+    "dev": "expo start",
+    "start": "expo start",
+    "build": "cross-env EXPO_ROUTER_APP_ROOT=src/app expo export --platform web",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "..\\node_modules\\.bin\\expo.cmd start --android",
-    "ios": "..\\node_modules\\.bin\\expo.cmd start --ios",
-    "web": "..\\node_modules\\.bin\\expo.cmd start --web",
-    "lint": "..\\node_modules\\.bin\\expo.cmd lint"
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "expo lint"
   },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^7.15.5",
@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "cross-env": "^7.0.3",
     "typescript": "~5.9.2"
   },
   "private": true
