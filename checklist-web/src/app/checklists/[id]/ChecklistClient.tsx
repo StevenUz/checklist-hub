@@ -162,7 +162,7 @@ export default function ChecklistClient({ checklist }: Props) {
               <button
                 type="button"
                 onClick={() => setIsEditing((v) => !v)}
-                className="rounded-lg bg-emerald-50 px-3 py-2 text-emerald-800 transition hover:bg-emerald-100"
+                className="rounded-lg bg-emerald-600 px-3 py-2 text-white transition hover:bg-emerald-700 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
               >
                 {isEditing ? "Done" : "Edit"}
               </button>
@@ -170,7 +170,7 @@ export default function ChecklistClient({ checklist }: Props) {
                 type="button"
                 onClick={() => void handleExportPdf()}
                 disabled={isExporting}
-                className="rounded-lg bg-slate-800 px-3 py-2 text-white transition hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg bg-emerald-600 px-3 py-2 text-white transition hover:bg-emerald-700 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isExporting ? "Exporting..." : "Export as PDF"}
               </button>
@@ -179,7 +179,7 @@ export default function ChecklistClient({ checklist }: Props) {
               <p className="mt-2 text-sm leading-6 text-slate-600">{checklist.description}</p>
             ) : null}
           </div>
-          <div className="rounded-lg bg-emerald-50 px-4 py-3 text-emerald-800">
+          <div className="rounded-lg bg-emerald-600 px-4 py-3 text-white shadow-md">
             <p className="text-2xl font-semibold">{checklist.progress.percentage}%</p>
             <p className="text-xs font-medium">
               {checklist.progress.completedItems} / {checklist.progress.totalItems} complete
