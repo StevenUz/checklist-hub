@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   toggleChecklistItemAction,
@@ -9,6 +9,8 @@ import {
   updateChecklistSectionAction,
   deleteChecklistSectionAction,
 } from "@/actions/checklistActions";
+
+const RECENTLY_COLLAPSED_SECTION_KEY = "checklisthub:recently-collapsed-section";
 
 type ChecklistSectionProps = {
   section: {
@@ -28,9 +30,25 @@ export function ChecklistSection({ section, isEditing = false }: ChecklistSectio
     () => section.items.length > 0 && section.items.every((item) => item.isCompleted),
     [section.items],
   );
+  const sectionRef = useRef<HTMLElement | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(isComplete);
   const [editingSectionTitle, setEditingSectionTitle] = useState(false);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [optimisticallyCompletedItemIds, setOptimisticallyCompletedItemIds] = useState<Set<number>>(
+    () => new Set(),
+  );
+  const visibleItems = useMemo(
+    () =>
+      section.items.map((item) => ({
+        ...item,
+        isCompleted: item.isCompleted || optimisticallyCompletedItemIds.has(item.id),
+      })),
+    [optimisticallyCompletedItemIds, section.items],
+  );
+  const remainingOpenItems = useMemo(
+    () => visibleItems.filter((item) => !item.isCompleted).length,
+    [visibleItems],
+  );
 
   useEffect(() => {
     if (!isEditing) {
@@ -45,8 +63,66 @@ export function ChecklistSection({ section, isEditing = false }: ChecklistSectio
     }
   }, [isComplete]);
 
+  useEffect(() => {
+    setOptimisticallyCompletedItemIds((current) => {
+      const next = new Set(current);
+
+      for (const item of section.items) {
+        if (item.isCompleted) {
+          next.delete(item.id);
+        }
+      }
+
+      return next.size === current.size ? current : next;
+    });
+  }, [section.items]);
+
+  const scrollSectionToTop = (delay = 0) => {
+    window.setTimeout(() => {
+      const sectionElement = sectionRef.current;
+
+      if (!sectionElement) {
+        return;
+      }
+
+      const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+      const scrollGap = 16;
+
+      window.scrollTo({
+        top: sectionElement.getBoundingClientRect().top + window.scrollY - headerHeight - scrollGap,
+        behavior: "auto",
+      });
+    }, delay);
+  };
+
+  useEffect(() => {
+    if (!isCollapsed || sessionStorage.getItem(RECENTLY_COLLAPSED_SECTION_KEY) !== String(section.id)) {
+      return;
+    }
+
+    scrollSectionToTop();
+    scrollSectionToTop(80);
+    window.setTimeout(() => {
+      if (sessionStorage.getItem(RECENTLY_COLLAPSED_SECTION_KEY) === String(section.id)) {
+        sessionStorage.removeItem(RECENTLY_COLLAPSED_SECTION_KEY);
+      }
+    }, 200);
+  }, [isCollapsed, section.id]);
+
+  const markSectionForScroll = () => {
+    sessionStorage.setItem(RECENTLY_COLLAPSED_SECTION_KEY, String(section.id));
+  };
+
+  const handleToggleItemClick = (item: { id: number; isCompleted: boolean }) => {
+    if (!item.isCompleted && remainingOpenItems === 1) {
+      markSectionForScroll();
+      setOptimisticallyCompletedItemIds((current) => new Set(current).add(item.id));
+      setIsCollapsed(true);
+    }
+  };
+
   return (
-    <section className="rounded-lg border border-white/80 bg-white/90 p-5 shadow-sm backdrop-blur">
+    <section ref={sectionRef} className="scroll-mt-28 overflow-anchor-none rounded-lg border border-white/80 bg-white/90 p-5 shadow-sm backdrop-blur">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           {editingSectionTitle ? (
@@ -115,7 +191,7 @@ export function ChecklistSection({ section, isEditing = false }: ChecklistSectio
 
       {!isCollapsed ? (
         <div className="mt-4 space-y-3">
-          {section.items.map((item) => (
+          {visibleItems.map((item) => (
             <div
               key={item.id}
               className="flex items-start gap-3 rounded-md border border-slate-100 bg-slate-50 p-3"
@@ -123,6 +199,7 @@ export function ChecklistSection({ section, isEditing = false }: ChecklistSectio
               <form action={toggleChecklistItemAction}>
                 <input type="hidden" name="itemId" value={item.id} />
                 <button
+                  onClick={() => handleToggleItemClick(item)}
                   className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-md border text-sm font-semibold ${
                     item.isCompleted
                       ? "border-emerald-600 bg-emerald-600 text-white"
